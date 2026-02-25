@@ -198,8 +198,8 @@ export default function PortfolioChart({ result }: Props) {
                     )}
                 </div>
             </div>
-            <ResponsiveContainer width="100%" height={340}>
-                <AreaChart data={chartData} margin={{ top: 8, right: 24, left: 16, bottom: 0 }}>
+            <ResponsiveContainer width="100%" height={360}>
+                <AreaChart data={chartData} margin={{ top: 40, right: 24, left: 16, bottom: 0 }}>
                     <defs>
                         <linearGradient id="gIdeco" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%"  stopColor="#404040" stopOpacity={0.55} />

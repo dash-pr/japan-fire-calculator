@@ -31,7 +31,6 @@ export default function YearlyTable({ result, maxTableHeight = 360 }: Props) {
         <div
             style={{
                 border: "1px solid var(--ink)",
-                overflow: "hidden",
                 marginTop: 16,
             }}
         >

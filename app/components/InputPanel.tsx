@@ -607,13 +607,18 @@ function FundPicker({ onSelect, current }: { onSelect: (r: number) => void; curr
                             transition: "all 0.12s",
                         }}
                     >
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
                             <span
                                 style={{
                                     fontFamily: "'JetBrains Mono', monospace",
                                     fontSize: 11,
                                     fontWeight: 600,
                                     color: active ? "#CC0000" : "#F9F9F7",
+                                    flex: 1,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                    marginRight: 8,
                                 }}
                             >
                                 {fund.name}
@@ -624,6 +629,7 @@ function FundPicker({ onSelect, current }: { onSelect: (r: number) => void; curr
                                     fontSize: 11,
                                     color: "#CC0000",
                                     fontWeight: 700,
+                                    whiteSpace: "nowrap",
                                 }}
                             >
                                 {fund.expectedReturn}%
@@ -631,12 +637,17 @@ function FundPicker({ onSelect, current }: { onSelect: (r: number) => void; curr
                         </div>
                         <div
                             style={{
+                                display: "flex",
+                                justifyContent: "space-between",
                                 fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 10,
-                                color: "rgba(255,255,255,0.35)",
                             }}
                         >
-                            {fund.category} · Exp. ratio: {fund.expenseRatio}%
+                            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>
+                                {fund.category} · Fee: {fund.expenseRatio}%
+                            </span>
+                            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>
+                                5y avg: <span style={{ color: active ? "#CC0000" : "rgba(255,255,255,0.7)", fontWeight: 600 }}>{fund.return5y}%</span>
+                            </span>
                         </div>
                     </button>
                 );

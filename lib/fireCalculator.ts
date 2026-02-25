@@ -446,15 +446,31 @@ export function formatYenFull(amount: number): string {
 }
 
 // ── Popular NISA funds for the fund selector
+export type SectorWeights = {
+  "US Equity": number;
+  "Japan Equity": number;
+  "Europe Equity": number;
+  "Emerging Mkts": number;
+  "Japan REIT": number;
+  "Global REIT": number;
+  "Bonds": number;
+  "Other": number;
+};
+
 export interface NisaFund {
   name: string;
   ticker: string;
   category: string;
-  expenseRatio: number;       // % annual
-  expectedReturn: number;     // % annual (historical / estimated)
+  expenseRatio: number;     // % annual
+  expectedReturn: number;   // % annual (long-run estimate used in simulation)
+  return1y: number;         // % (approx, JPY-denominated)
+  return3y: number;         // % annualised
+  return5y: number;         // % annualised
+  return10y: number;        // % annualised
   description: string;
   currency: string;
   benchmark: string;
+  sectorWeights: SectorWeights;
 }
 
 export const NISA_FUNDS: NisaFund[] = [
@@ -464,9 +480,14 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "Global Equity",
     expenseRatio: 0.05775,
     expectedReturn: 8.5,
+    return1y: 27.1,
+    return3y: 17.8,
+    return5y: 19.6,
+    return10y: 14.2,
     description: "Most popular all-world fund. Tracks MSCI ACWI covering ~2,900 stocks in 47 countries.",
     currency: "JPY",
     benchmark: "MSCI ACWI",
+    sectorWeights: { "US Equity": 63, "Japan Equity": 6, "Europe Equity": 17, "Emerging Mkts": 11, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 3 },
   },
   {
     name: "eMAXIS Slim 米国株式(S&P500)",
@@ -474,9 +495,14 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "US Equity",
     expenseRatio: 0.09372,
     expectedReturn: 10.2,
+    return1y: 32.4,
+    return3y: 22.1,
+    return5y: 24.3,
+    return10y: 17.5,
     description: "Tracks S&P 500, exposing investors to 500 large US companies. Historically high returns.",
     currency: "JPY",
     benchmark: "S&P 500",
+    sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
   },
   {
     name: "楽天・全米株式インデックスファンド",
@@ -484,9 +510,14 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "US Equity",
     expenseRatio: 0.162,
     expectedReturn: 9.8,
+    return1y: 30.1,
+    return3y: 20.2,
+    return5y: 22.4,
+    return10y: 16.3,
     description: "Tracks the entire US stock market via Vanguard VTI. Broader than S&P 500.",
     currency: "JPY",
     benchmark: "CRSP US Total Market",
+    sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
   },
   {
     name: "SBI・V・S&P500インデックスファンド",
@@ -494,9 +525,14 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "US Equity",
     expenseRatio: 0.0938,
     expectedReturn: 10.1,
+    return1y: 31.8,
+    return3y: 21.6,
+    return5y: 23.8,
+    return10y: 16.9,
     description: "Ultra-low cost S&P 500 tracker from SBI Asset Management. Competing with eMAXIS Slim.",
     currency: "JPY",
     benchmark: "S&P 500",
+    sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
   },
   {
     name: "eMAXIS Slim 先進国株式インデックス",
@@ -504,9 +540,14 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "Developed Markets",
     expenseRatio: 0.09889,
     expectedReturn: 7.8,
+    return1y: 24.3,
+    return3y: 16.1,
+    return5y: 18.2,
+    return10y: 13.4,
     description: "Covers developed market equities excluding Japan. Tracks MSCI World index.",
     currency: "JPY",
     benchmark: "MSCI World ex-Japan",
+    sectorWeights: { "US Equity": 72, "Japan Equity": 0, "Europe Equity": 22, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 6 },
   },
   {
     name: "eMAXIS Slim バランス(8資産均等型)",
@@ -514,9 +555,14 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "Balanced",
     expenseRatio: 0.143,
     expectedReturn: 5.5,
+    return1y: 14.2,
+    return3y: 8.7,
+    return5y: 9.9,
+    return10y: 8.1,
     description: "8-asset class balanced fund. Stocks, bonds, REITs across domestic and international markets.",
     currency: "JPY",
     benchmark: "Custom Composite",
+    sectorWeights: { "US Equity": 12, "Japan Equity": 13, "Europe Equity": 13, "Emerging Mkts": 12, "Japan REIT": 12, "Global REIT": 13, "Bonds": 25, "Other": 0 },
   },
   {
     name: "ニッセイ・インデックスファンド(世界株式)",
@@ -524,9 +570,14 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "Global Equity",
     expenseRatio: 0.1133,
     expectedReturn: 8.2,
+    return1y: 26.5,
+    return3y: 17.1,
+    return5y: 19.0,
+    return10y: 13.8,
     description: "Nissay's low-cost global equity fund covering developed and emerging markets.",
     currency: "JPY",
     benchmark: "MSCI ACWI",
+    sectorWeights: { "US Equity": 62, "Japan Equity": 7, "Europe Equity": 17, "Emerging Mkts": 11, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 3 },
   },
   {
     name: "eMAXIS Slim 新興国株式インデックス",
@@ -534,8 +585,13 @@ export const NISA_FUNDS: NisaFund[] = [
     category: "Emerging Markets",
     expenseRatio: 0.1518,
     expectedReturn: 7.0,
+    return1y: 12.3,
+    return3y: 6.8,
+    return5y: 8.7,
+    return10y: 6.9,
     description: "Emerging markets exposure covering China, Taiwan, India and more via MSCI EM index.",
     currency: "JPY",
     benchmark: "MSCI EM",
+    sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 100, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
   },
 ];
