@@ -52,6 +52,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setLifestyleInflation,
     postFatfireMonthlyIncome,
     setPostFatfireMonthlyIncome,
+    initialIdecoBalance,
+    setInitialIdecoBalance,
+    initialNisaTsumitateBalance,
+    setInitialNisaTsumitateBalance,
+    initialNisaGrowthBalance,
+    setInitialNisaGrowthBalance,
+    initialTaxableBalance,
+    setInitialTaxableBalance,
   } = useSimulator();
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -304,6 +312,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onPostFatfireMonthlyIncome={setPostFatfireMonthlyIncome}
               futureExpenses={futureExpenses}
               onFutureExpenses={setFutureExpenses}
+              initialIdecoBalance={initialIdecoBalance}
+              onInitialIdecoBalance={setInitialIdecoBalance}
+              initialNisaTsumitateBalance={initialNisaTsumitateBalance}
+              onInitialNisaTsumitateBalance={setInitialNisaTsumitateBalance}
+              initialNisaGrowthBalance={initialNisaGrowthBalance}
+              onInitialNisaGrowthBalance={setInitialNisaGrowthBalance}
+              initialTaxableBalance={initialTaxableBalance}
+              onInitialTaxableBalance={setInitialTaxableBalance}
             />
           </div>
         </aside>

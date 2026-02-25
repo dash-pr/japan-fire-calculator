@@ -33,6 +33,10 @@ const DEFAULT_INPUT: SimulationInput = {
   juniorNisaBalance: 0,
   annualReturn: 6,
   swpDepletionAge: 90,
+  initialIdecoBalance: 0,
+  initialNisaTsumitateBalance: 0,
+  initialNisaGrowthBalance: 0,
+  initialTaxableBalance: 0,
 };
 
 function useDebounced<T>(value: T, delay: number) {
@@ -78,6 +82,14 @@ export interface SimulatorContextValue {
   setJuniorNisaBalance: (v: number) => void;
   swpDepletionAge: number;
   setSwpDepletionAge: (v: number) => void;
+  initialIdecoBalance: number;
+  setInitialIdecoBalance: (v: number) => void;
+  initialNisaTsumitateBalance: number;
+  setInitialNisaTsumitateBalance: (v: number) => void;
+  initialNisaGrowthBalance: number;
+  setInitialNisaGrowthBalance: (v: number) => void;
+  initialTaxableBalance: number;
+  setInitialTaxableBalance: (v: number) => void;
   result: SimulationResult | null;
   currentYear: number;
 }
@@ -102,6 +114,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [juniorNisaBalance, setJuniorNisaBalance] = useState(DEFAULT_INPUT.juniorNisaBalance);
   const [swpDepletionAge, setSwpDepletionAge] = useState(DEFAULT_INPUT.swpDepletionAge ?? 90);
+  const [initialIdecoBalance, setInitialIdecoBalance] = useState(DEFAULT_INPUT.initialIdecoBalance ?? 0);
+  const [initialNisaTsumitateBalance, setInitialNisaTsumitateBalance] = useState(DEFAULT_INPUT.initialNisaTsumitateBalance ?? 0);
+  const [initialNisaGrowthBalance, setInitialNisaGrowthBalance] = useState(DEFAULT_INPUT.initialNisaGrowthBalance ?? 0);
+  const [initialTaxableBalance, setInitialTaxableBalance] = useState(DEFAULT_INPUT.initialTaxableBalance ?? 0);
   const [result, setResult] = useState<SimulationResult | null>(null);
 
   const input: SimulationInput = {
@@ -121,6 +137,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     juniorNisaBalance,
     annualReturn,
     swpDepletionAge,
+    initialIdecoBalance,
+    initialNisaTsumitateBalance,
+    initialNisaGrowthBalance,
+    initialTaxableBalance,
   };
 
   const debouncedInput = useDebounced(input, 150);
@@ -153,6 +173,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         futureExpenses, setFutureExpenses,
         juniorNisaBalance, setJuniorNisaBalance,
         swpDepletionAge, setSwpDepletionAge,
+        initialIdecoBalance, setInitialIdecoBalance,
+        initialNisaTsumitateBalance, setInitialNisaTsumitateBalance,
+        initialNisaGrowthBalance, setInitialNisaGrowthBalance,
+        initialTaxableBalance, setInitialTaxableBalance,
         result,
         currentYear: new Date().getFullYear(),
       }}

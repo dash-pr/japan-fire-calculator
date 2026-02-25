@@ -45,6 +45,15 @@ interface Props {
     // Future expenses
     futureExpenses: FutureExpense[];
     onFutureExpenses: (v: FutureExpense[]) => void;
+    // Current portfolio balances
+    initialIdecoBalance: number;
+    onInitialIdecoBalance: (v: number) => void;
+    initialNisaTsumitateBalance: number;
+    onInitialNisaTsumitateBalance: (v: number) => void;
+    initialNisaGrowthBalance: number;
+    onInitialNisaGrowthBalance: (v: number) => void;
+    initialTaxableBalance: number;
+    onInitialTaxableBalance: (v: number) => void;
 }
 
 /* ─── Info tooltip ──────────────────────────────────────────────────────────────────────────── */
@@ -342,6 +351,14 @@ export default function InputPanel({
     onPostFatfireMonthlyIncome,
     futureExpenses,
     onFutureExpenses,
+    initialIdecoBalance,
+    onInitialIdecoBalance,
+    initialNisaTsumitateBalance,
+    onInitialNisaTsumitateBalance,
+    initialNisaGrowthBalance,
+    onInitialNisaGrowthBalance,
+    initialTaxableBalance,
+    onInitialTaxableBalance,
 }: Props) {
     const [showFunds, setShowFunds] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -507,6 +524,33 @@ export default function InputPanel({
                 checked={accounts.taxableEnabled}
                 onChange={(v) => onAccounts({ ...accounts, taxableEnabled: v })}
             />
+
+            {/* ── Current Portfolio Balances ── */}
+            <SectionHeader title="Current Portfolio (optional)" />
+            <Field
+                label="iDeCo Balance"
+                info="Your current iDeCo account balance in yen. Leave at 0 if you don't have an existing balance."
+            >
+                <NumberInput value={initialIdecoBalance} onChange={onInitialIdecoBalance} step={100000} prefix="¥" min={0} />
+            </Field>
+            <Field
+                label="NISA Tsumitate Balance"
+                info="Current balance in your NISA tsumitate (積立投資枠) account."
+            >
+                <NumberInput value={initialNisaTsumitateBalance} onChange={onInitialNisaTsumitateBalance} step={100000} prefix="¥" min={0} />
+            </Field>
+            <Field
+                label="NISA Growth Balance"
+                info="Current balance in your NISA growth (成長投資枠) account."
+            >
+                <NumberInput value={initialNisaGrowthBalance} onChange={onInitialNisaGrowthBalance} step={100000} prefix="¥" min={0} />
+            </Field>
+            <Field
+                label="Taxable Brokerage Balance"
+                info="Current balance in your taxable brokerage account."
+            >
+                <NumberInput value={initialTaxableBalance} onChange={onInitialTaxableBalance} step={100000} prefix="¥" min={0} />
+            </Field>
 
             {/* ── Advanced Options (collapsible) ── */}
             <button

@@ -40,6 +40,11 @@ export interface SimulationInput {
   juniorNisaBalance: number;      // yen — lump-sum added at FIRE date
   annualReturn: number;           // % e.g. 6
   swpDepletionAge?: number;       // age by which portfolio reaches 0 (default LIFE_EXPECTANCY)
+  // Current portfolio balances (optional)
+  initialIdecoBalance?: number;   // yen — current iDeCo balance
+  initialNisaTsumitateBalance?: number; // yen — current NISA tsumitate balance
+  initialNisaGrowthBalance?: number;    // yen — current NISA growth balance
+  initialTaxableBalance?: number;       // yen — current taxable brokerage balance
 }
 
 export interface MonthlySnapshot {
@@ -139,6 +144,10 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     juniorNisaBalance,
     annualReturn,
     swpDepletionAge = LIFE_EXPECTANCY,
+    initialIdecoBalance = 0,
+    initialNisaTsumitateBalance = 0,
+    initialNisaGrowthBalance = 0,
+    initialTaxableBalance = 0,
   } = input;
 
   const startYear = new Date().getFullYear();
@@ -149,13 +158,13 @@ export function runSimulation(input: SimulationInput): SimulationResult {
   const monthlyIncomeGrowth = (salaryIncreaseRate / 100) / 12;
   const monthlyLifestyleInflation = (lifestyleInflation / 100) / 12;
 
-  // ── Account balances ──────────────────────────────────────────────────────
-  let ideco          = 0;
-  let nisaTsumitate  = 0;
-  let nisaGrowth     = 0;
-  let taxable        = 0;
+  // ── Account balances (initialized with current portfolio) ─────────────────
+  let ideco          = initialIdecoBalance;
+  let nisaTsumitate  = initialNisaTsumitateBalance;
+  let nisaGrowth     = initialNisaGrowthBalance;
+  let taxable        = initialTaxableBalance;
   let juniorNisa     = 0;            // grows but not contributed to
-  let totalTaxableCostBasis = 0;
+  let totalTaxableCostBasis = initialTaxableBalance; // assume cost basis = current balance (conservative)
 
   // NISA slot usage trackers
   let nisaTsumitateAnnualUsed    = 0;
