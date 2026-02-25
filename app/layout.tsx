@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SimulatorProvider } from "./context/SimulatorContext";
 import AppShell from "./components/AppShell";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Japan FIRE Calculator — Retire Early in Japan",
@@ -28,6 +30,8 @@ export default function RootLayout({
         <SimulatorProvider>
           <AppShell>{children}</AppShell>
         </SimulatorProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
