@@ -1,65 +1,195 @@
-import Image from "next/image";
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import FireSummary from "./components/FireSummary";
+import { useSimulator } from "./context/SimulatorContext";
+import { formatYen } from "@/lib/fireCalculator";
 
 export default function Home() {
+  const { result, targetFireAge, currentYear } = useSimulator();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <>
+      {/* Section label */}
+      <div
+        style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "var(--n500)",
+          marginBottom: 10,
+          borderBottom: "4px solid var(--ink)",
+          paddingBottom: 6,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+        }}
+      >
+        <span>Your FIRE Projection</span>
+        <span style={{ fontSize: 9, letterSpacing: "0.12em" }}>
+          Monthly simulation · Updates live as you adjust inputs
+        </span>
+      </div>
+
+      {/* KPI Cards */}
+      <FireSummary result={result} targetFireAge={targetFireAge} currentYear={currentYear} />
+
+      <div className="ornament" style={{ marginTop: 20, marginBottom: 16 }}>&#x2727; &#x2727; &#x2727;</div>
+
+      {/* Quick-stats row */}
+      {result && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            border: "1px solid var(--ink)",
+            marginBottom: 24,
+          }}
+        >
+          {[
+            {
+              label: "Total iDeCo contributed",
+              value: formatYen(result.totalIdecoContributed),
+              desc: "Pre-tax contributions up to FIRE date",
+            },
+            {
+              label: "Total NISA contributed",
+              value: formatYen(result.totalNisaTsumitateContributed + result.totalNisaGrowthContributed),
+              desc: "Tsumitate + growth slots combined",
+            },
+            {
+              label: "Total taxable contributed",
+              value: formatYen(result.totalTaxableContributed),
+              desc: "After iDeCo & NISA are maxed",
+            },
+          ].map((stat, i, arr) => (
+            <div
+              key={stat.label}
+              style={{
+                padding: "16px 18px",
+                borderRight: i < arr.length - 1 ? "1px solid var(--muted)" : "none",
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 9,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "var(--n500)",
+                  marginBottom: 6,
+                }}
+              >
+                {stat.label}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: "var(--ink)",
+                  lineHeight: 1,
+                  marginBottom: 5,
+                }}
+              >
+                {stat.value}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  color: "var(--n600)",
+                  lineHeight: 1.4,
+                }}
+              >
+                {stat.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Navigation cards to other sections */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          border: "1px solid var(--ink)",
+        }}
+      >
+        {[
+          {
+            href: "/chart",
+            label: "Portfolio Chart",
+            tag: "Visualisation",
+            desc: "Stacked area chart of iDeCo, NISA and taxable growth from today to age 95. FIRE crossover lines marked.",
+          },
+          {
+            href: "/breakdown",
+            label: "Data Table",
+            tag: "Year-by-Year",
+            desc: "Every year's portfolio balance, expenses, account split, and FIRE status in a scrollable table.",
+          },
+          {
+            href: "/funds",
+            label: "Fund Guide",
+            tag: "NISA Funds",
+            desc: "Compare popular Japanese index funds by expense ratio and expected return. Set fund return directly.",
+          },
+        ].map((card, i, arr) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            style={{
+              display: "block",
+              padding: "20px 20px 18px",
+              borderRight: i < arr.length - 1 ? "1px solid var(--ink)" : "none",
+              textDecoration: "none",
+              color: "inherit",
+            }}
+            className="hard-shadow-hover"
+          >
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 9,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "var(--accent)",
+                marginBottom: 6,
+              }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              {card.tag}
+            </div>
+            <div
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: 17,
+                fontWeight: 700,
+                color: "var(--ink)",
+                marginBottom: 8,
+                lineHeight: 1.2,
+              }}
+            >
+              {card.label} →
+            </div>
+            <p
+              style={{
+                margin: 0,
+                fontFamily: "'Lora', Georgia, serif",
+                fontSize: 12,
+                fontStyle: "italic",
+                color: "var(--n600)",
+                lineHeight: 1.6,
+              }}
+            >
+              {card.desc}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </>
   );
 }
