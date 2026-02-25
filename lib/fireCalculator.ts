@@ -30,6 +30,8 @@ export interface SimulationInput {
   monthlyExpenses: number;        // yen/month (working phase)
   postFireMonthlyExpenses: number;// yen/month (retirement phase, today's money)
   postFireMonthlyIncome?: number; // yen/month side income during retirement (today's money)
+  lifestyleInflation: number;     // % per year — additional growth in post-fire expenses
+  postFatfireMonthlyIncome?: number; // yen/month additional side income after FATFIRE is achieved
   salaryIncreaseRate: number;     // % per year  e.g. 3
   annualInflation: number;        // % per year  e.g. 2
   futureExpenses: FutureExpense[];
@@ -63,6 +65,7 @@ export interface MonthlySnapshot {
   nisaGrowthCont: number;    // NISA growth contribution
   taxableCont: number;       // taxable brokerage contribution
   postFireSideIncome: number;// extra income in retirement (postFireMonthlyIncome, inflation-adj)
+  postFatfireSideIncome: number; // extra income after FATFIRE achieved (inflation-adj)
 }
 
 export interface SimulationResult {
@@ -126,6 +129,8 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     monthlyExpenses,
     postFireMonthlyExpenses,
     postFireMonthlyIncome = 0,
+    lifestyleInflation = 0,
+    postFatfireMonthlyIncome = 0,
     salaryIncreaseRate,
     annualInflation,
     futureExpenses,
@@ -137,9 +142,12 @@ export function runSimulation(input: SimulationInput): SimulationResult {
   } = input;
 
   const startYear = new Date().getFullYear();
+  // NOTE: annualReturn is NOMINAL (before inflation). Real return is implicitly calculated
+  // as portfolio growth minus expense growth. E.g., 6% nominal with 2% inflation ≈ 3.9% real.
   const monthlyReturn    = (annualReturn / 100) / 12;
   const monthlyInflation = (annualInflation / 100) / 12;
   const monthlyIncomeGrowth = (salaryIncreaseRate / 100) / 12;
+  const monthlyLifestyleInflation = (lifestyleInflation / 100) / 12;
 
   // ── Account balances ──────────────────────────────────────────────────────
   let ideco          = 0;
@@ -213,8 +221,11 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       : 0;
 
     // Expenses for this month (use postFire amount during retirement)
+    // Accounts for both inflation and lifestyle inflation during retirement
     const baseExpense = isFired
-      ? postFireMonthlyExpenses * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12 + (m - Math.round((targetFireAge - currentAge) * 12)))
+      ? postFireMonthlyExpenses
+          * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12 + (m - Math.round((targetFireAge - currentAge) * 12)))
+          * Math.pow(1 + monthlyLifestyleInflation, m - Math.round((targetFireAge - currentAge) * 12))
       : currentMonthlyExpenses;
 
     // ── Disposable income (accumulation only) ────────────────────────────
@@ -320,20 +331,20 @@ export function runSimulation(input: SimulationInput): SimulationResult {
         + (accounts.taxableEnabled ? taxableNetValue() : 0);
     }
 
-    // ── SWP: compute & lock monthly withdrawal at FIRE ────────────────────
+    // ── SWP: recalculate each month to exactly reach target age ────────────
     if (isFired) {
-      // Lock in the SWP amount once at the exact FIRE month
-      if (swpMonthlyAtFire === 0) {
-        const depletionAge = Math.max(targetFireAge + 1, swpDepletionAge);
-        const monthsLeft = (depletionAge - targetFireAge) * 12;
-        // Net out post-fire side income (inflation-grown to FIRE date)
-        const sideIncomeAtFire = postFireMonthlyIncome
-          * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12);
-        const netPortfolio = totalPortfolioNet();
-        swpMonthlyAtFire = swpPayment(netPortfolio, monthlyReturn, monthsLeft);
-        // Subtract side income so SWP covers only the gap (but keep swpMonthlyAtFire as gross portfolio draw)
-        // The side income is tracked separately in snapshots.
-        void sideIncomeAtFire; // used for display only
+      // Recalculate SWP each month based on remaining time and remaining portfolio
+      // This ensures the portfolio exactly reaches ¥0 at the target depletion age
+      const depletionAge = Math.max(targetFireAge + 1, swpDepletionAge);
+      const monthsLeftTotal = (depletionAge - targetFireAge) * 12;
+      const monthsElapsed = m - Math.round((targetFireAge - currentAge) * 12);
+      const monthsRemaining = monthsLeftTotal - monthsElapsed;
+
+      const netPortfolio = totalPortfolioNet();
+      if (monthsRemaining > 0 && netPortfolio > 0) {
+        swpMonthlyAtFire = swpPayment(netPortfolio, monthlyReturn, monthsRemaining);
+      } else if (monthsRemaining <= 0) {
+        swpMonthlyAtFire = 0; // Past depletion age, no withdrawal
       }
 
       // The SWP withdrawal target this month
@@ -435,6 +446,16 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       ? postFireMonthlyIncome * Math.pow(1 + monthlyInflation, m)
       : 0;
 
+    // Post-FATFIRE side income (kicks in when portfolio >= fatFireCapital)
+    const postFatfireSideIncomeNow = isFired && tot >= fatFireCapital && postFatfireMonthlyIncome > 0
+      ? postFatfireMonthlyIncome * Math.pow(1 + monthlyInflation, m)
+      : 0;
+
+    // SWP withdrawal is 0 if portfolio is depleted
+    const actualSwpWithdrawal = isFired && tot > 0
+      ? Math.round(swpMonthlyAtFire)
+      : 0;
+
     snapshots.push({
       age:           Math.round(ageDecimal * 10) / 10,
       year,
@@ -445,7 +466,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       nisaGrowth:    Math.round(nisaGrowth),
       nisa:          Math.round(nisaTsumitate + nisaGrowth),
       taxable:       Math.round(accounts.taxableEnabled ? tNet : 0),
-      swpWithdrawal: isFired ? Math.round(swpMonthlyAtFire) : 0,
+      swpWithdrawal: actualSwpWithdrawal,
       requiredCapital: Math.round(requiredCapital),
       leanFireCapital: Math.round(leanFireCapital),
       fatFireCapital:  Math.round(fatFireCapital),
@@ -457,6 +478,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       nisaGrowthCont:  Math.round(nisaGrowCont_),
       taxableCont:     Math.round(taxableCont_),
       postFireSideIncome: Math.round(postFireSideIncomeNow),
+      postFatfireSideIncome: Math.round(postFatfireSideIncomeNow),
     });
   }
 

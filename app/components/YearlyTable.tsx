@@ -83,9 +83,9 @@ export default function YearlyTable({ result, targetFireAge, maxTableHeight = 36
                                     ? "var(--n100)"
                                     : undefined;
 
-                            // Monthly income: salary during accumulation; SWP during retirement
+                            // Monthly income: salary during accumulation; expenses (withdrawal) during retirement
                             const monthlyIncome = isFired
-                                ? snap.swpWithdrawal + snap.postFireSideIncome
+                                ? snap.monthlyExpenses + snap.postFireSideIncome + snap.postFatfireSideIncome
                                 : snap.grossIncome;
                             const incomeColor = isFired ? "#CC6600" : "var(--n700)";
 

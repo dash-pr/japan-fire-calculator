@@ -18,6 +18,8 @@ const DEFAULT_INPUT: SimulationInput = {
   monthlyExpenses: 250_000,
   postFireMonthlyExpenses: 200_000,
   postFireMonthlyIncome: 0,
+  lifestyleInflation: 0,
+  postFatfireMonthlyIncome: 0,
   salaryIncreaseRate: 3,
   annualInflation: 2,
   futureExpenses: [],
@@ -56,6 +58,10 @@ export interface SimulatorContextValue {
   setPostFireMonthlyExpenses: (v: number) => void;
   postFireMonthlyIncome: number;
   setPostFireMonthlyIncome: (v: number) => void;
+  lifestyleInflation: number;
+  setLifestyleInflation: (v: number) => void;
+  postFatfireMonthlyIncome: number;
+  setPostFatfireMonthlyIncome: (v: number) => void;
   salaryIncreaseRate: number;
   setSalaryIncreaseRate: (v: number) => void;
   annualInflation: number;
@@ -86,6 +92,8 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
   const [monthlyExpenses, setMonthlyExpenses] = useState(DEFAULT_INPUT.monthlyExpenses);
   const [postFireMonthlyExpenses, setPostFireMonthlyExpenses] = useState(DEFAULT_INPUT.postFireMonthlyExpenses);
   const [postFireMonthlyIncome, setPostFireMonthlyIncome] = useState(DEFAULT_INPUT.postFireMonthlyIncome ?? 0);
+  const [lifestyleInflation, setLifestyleInflation] = useState(DEFAULT_INPUT.lifestyleInflation);
+  const [postFatfireMonthlyIncome, setPostFatfireMonthlyIncome] = useState(DEFAULT_INPUT.postFatfireMonthlyIncome ?? 0);
   const [salaryIncreaseRate, setSalaryIncreaseRate] = useState(DEFAULT_INPUT.salaryIncreaseRate);
   const [annualInflation, setAnnualInflation] = useState(DEFAULT_INPUT.annualInflation);
   const [accounts, setAccounts] = useState<AccountToggles>(DEFAULT_INPUT.accounts);
@@ -103,6 +111,8 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     monthlyExpenses,
     postFireMonthlyExpenses,
     postFireMonthlyIncome,
+    lifestyleInflation,
+    postFatfireMonthlyIncome,
     salaryIncreaseRate,
     annualInflation,
     futureExpenses,
@@ -133,6 +143,8 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         monthlyExpenses, setMonthlyExpenses,
         postFireMonthlyExpenses, setPostFireMonthlyExpenses,
         postFireMonthlyIncome, setPostFireMonthlyIncome,
+        lifestyleInflation, setLifestyleInflation,
+        postFatfireMonthlyIncome, setPostFatfireMonthlyIncome,
         salaryIncreaseRate, setSalaryIncreaseRate,
         annualInflation, setAnnualInflation,
         accounts, setAccounts,

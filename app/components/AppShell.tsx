@@ -46,6 +46,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setSwpDepletionAge,
     postFireMonthlyIncome,
     setPostFireMonthlyIncome,
+    lifestyleInflation,
+    setLifestyleInflation,
+    postFatfireMonthlyIncome,
+    setPostFatfireMonthlyIncome,
   } = useSimulator();
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -295,6 +299,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onSwpDepletionAge={setSwpDepletionAge}
               postFireMonthlyIncome={postFireMonthlyIncome}
               onPostFireMonthlyIncome={setPostFireMonthlyIncome}
+              lifestyleInflation={lifestyleInflation}
+              onLifestyleInflation={setLifestyleInflation}
+              postFatfireMonthlyIncome={postFatfireMonthlyIncome}
+              onPostFatfireMonthlyIncome={setPostFatfireMonthlyIncome}
               futureExpenses={futureExpenses}
               onFutureExpenses={setFutureExpenses}
             />

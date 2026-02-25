@@ -38,6 +38,10 @@ interface Props {
     // Advanced
     postFireMonthlyIncome: number;
     onPostFireMonthlyIncome: (v: number) => void;
+    lifestyleInflation: number;
+    onLifestyleInflation: (v: number) => void;
+    postFatfireMonthlyIncome: number;
+    onPostFatfireMonthlyIncome: (v: number) => void;
     // Future expenses
     futureExpenses: FutureExpense[];
     onFutureExpenses: (v: FutureExpense[]) => void;
@@ -332,6 +336,10 @@ export default function InputPanel({
     onSwpDepletionAge,
     postFireMonthlyIncome,
     onPostFireMonthlyIncome,
+    lifestyleInflation,
+    onLifestyleInflation,
+    postFatfireMonthlyIncome,
+    onPostFatfireMonthlyIncome,
     futureExpenses,
     onFutureExpenses,
 }: Props) {
@@ -415,7 +423,7 @@ export default function InputPanel({
                 label="Expected Annual Return" value={annualReturn}
                 onChange={onAnnualReturn}
                 min={1} max={15} step={0.5} format={fmtPct}
-                info="Assumed annual return across all accounts. Use the fund picker below to auto-fill from real fund data."
+                info="Nominal annual return before inflation. E.g., 6% input with 2% inflation = ~4% real return. Use fund picker to auto-fill."
             />
 
             {/* Fund picker toggle */}
@@ -541,9 +549,25 @@ export default function InputPanel({
                 <div style={{ marginBottom: 4 }}>
                     <Field
                         label="Post-FIRE Side Income / mo"
-                        info="Monthly income during retirement (pension, part-time, rental). In today's yen. Shown in the Cash Flow tab."
+                        info="Monthly income during retirement (pension, part-time, rental). In today's yen."
                     >
                         <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
+                    </Field>
+                    <SliderField
+                        label="Lifestyle Inflation / yr"
+                        value={lifestyleInflation}
+                        onChange={onLifestyleInflation}
+                        min={0}
+                        max={8}
+                        step={0.25}
+                        format={fmtPct}
+                        info="Annual increase in post-fire expenses beyond inflation. E.g., traveling more as you retire."
+                    />
+                    <Field
+                        label="Post-FATFIRE Side Income / mo"
+                        info="Additional monthly income that kicks in after you reach Fat FIRE. In today's yen."
+                    >
+                        <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
                     </Field>
                 </div>
             )}
