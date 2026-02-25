@@ -279,9 +279,11 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 768px) {
+  /* ── Viewport & body adjustments ── */
   html, body {
     overflow: auto;
     height: auto;
+    font-size: 16px; /* Prevents iOS zoom on input focus */
   }
 
   /* App shell becomes scrollable on mobile */
@@ -296,15 +298,50 @@ input[type="checkbox"] {
     overflow: visible !important;
   }
 
-  /* Sidebar toggle button */
+  /* ── Header responsive ── */
+  .app-shell header {
+    padding: env(safe-area-inset-top) 0 0 0;
+  }
+
+  .app-shell h1 {
+    font-size: clamp(18px, 6vw, 32px) !important;
+    padding: 0 12px !important;
+  }
+
+  /* ── Navigation responsive ── */
+  .responsive-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .responsive-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .responsive-nav a {
+    padding: 10px 14px !important;
+    font-size: 10px !important;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── Header nameplate ── */
+  .app-shell header > div:nth-child(2) {
+    padding: 8px 12px 6px !important;
+  }
+
+  /* ── Sidebar toggle button — touch-friendly ── */
   .mobile-sidebar-toggle {
     display: flex !important;
     position: fixed;
-    bottom: 16px;
-    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    right: max(16px, env(safe-area-inset-right, 16px));
     z-index: 1000;
     width: 52px;
     height: 52px;
+    min-height: 52px;
+    min-width: 52px;
     background: #111111;
     color: #F9F9F7;
     border: 2px solid rgba(255,255,255,0.2);
@@ -315,9 +352,14 @@ input[type="checkbox"] {
     font-family: 'JetBrains Mono', monospace;
     font-size: 18px;
     font-weight: 700;
+    border-radius: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-sidebar-toggle:active {
+    background: #2a2a2a;
   }
 
-  /* Sidebar overlay */
+  /* ── Sidebar overlay ── */
   .mobile-sidebar-overlay {
     display: block;
     position: fixed;
@@ -333,24 +375,49 @@ input[type="checkbox"] {
     pointer-events: auto;
   }
 
-  /* Sidebar as drawer */
+  /* ── Sidebar as drawer — safe area aware ── */
   .sidebar-section {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     bottom: 0 !important;
-    width: 85vw !important;
-    max-width: 340px !important;
+    width: min(85vw, 340px) !important;
     min-width: unset !important;
     z-index: 950 !important;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
+    padding-top: env(safe-area-inset-top, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
   .sidebar-section.mobile-open {
     transform: translateX(0);
   }
 
-  /* Header adjustments */
+  /* ── Input sizing for touch ── */
+  input[type="number"],
+  input[type="text"],
+  input[type="range"],
+  select {
+    font-size: 16px !important; /* Prevents iOS zoom */
+    min-height: 44px;
+    padding: 10px 8px !important;
+  }
+  input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px;
+    min-height: 18px;
+  }
+
+  /* ── Button sizing for touch ── */
+  button {
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Header adjustments ── */
   .mobile-hide {
     display: none !important;
   }
@@ -368,25 +435,7 @@ input[type="checkbox"] {
   }
 
   .responsive-grid-fire-summary {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  /* ── Responsive nav ── */
-  .responsive-nav {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .responsive-nav::-webkit-scrollbar {
-    display: none;
-  }
-  .responsive-nav a {
-    padding: 8px 12px !important;
-    font-size: 9px !important;
-  }
-
-  /* ── Header nameplate ── */
-  .app-shell header > div:nth-child(2) {
-    padding: 10px 12px 8px !important;
+    grid-template-columns: 1fr !important;
   }
 
   /* ── Funds page layout ── */
@@ -397,9 +446,25 @@ input[type="checkbox"] {
     width: 100% !important;
   }
 
-  /* ── Main content padding ── */
+  /* ── Table responsive ── */
+  table {
+    font-size: 12px !important;
+  }
+  table th {
+    font-size: 11px !important;
+    padding: 8px 10px !important;
+  }
+  table td {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* ── Main content padding with safe areas ── */
   .main-content {
     padding: 16px 12px 80px !important;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
   }
 
   /* ── Chart header responsive ── */
@@ -412,10 +477,97 @@ input[type="checkbox"] {
     flex-wrap: wrap !important;
     gap: 8px !important;
   }
+
+  /* ── SVG and Charts responsive ── */
+  svg {
+    max-width: 100%;
+  }
+
+  /* ── Card/Section responsive ── */
+  .card {
+    padding: 16px 12px !important;
+  }
+
+  /* ── Text scaling ── */
+  p {
+    font-size: 13px !important;
+    line-height: 1.7;
+  }
+
+  /* ── Utility spacing ── */
+  .ornament {
+    font-size: 16px !important;
+  }
 }
 
+/* ── Very small phones (< 480px) ── */
 @media (max-width: 480px) {
   .responsive-grid-fire-summary {
     grid-template-columns: 1fr !important;
+  }
+
+  .app-shell h1 {
+    font-size: clamp(16px, 5vw, 24px) !important;
+  }
+
+  .responsive-nav a {
+    padding: 9px 12px !important;
+    font-size: 9px !important;
+  }
+
+  input[type="number"],
+  input[type="text"],
+  select {
+    font-size: 16px !important;
+  }
+
+  /* ── Tighter spacing on small screens ── */
+  .main-content {
+    padding: 12px 8px 80px !important;
+  }
+
+  .sidebar-section {
+    width: min(90vw, 300px) !important;
+  }
+
+  table {
+    font-size: 11px !important;
+  }
+  table th, table td {
+    padding: 6px 8px !important;
+  }
+
+  .card {
+    padding: 12px 10px !important;
+  }
+
+  p {
+    font-size: 12px !important;
+  }
+}
+
+/* ── iPhone notch support (iPhone X and newer) ── */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .app-shell {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* ── Dark mode preference ── */
+@media (prefers-color-scheme: dark) {
+  /* No changes needed — already dark by default */
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-sidebar-toggle,
+  .sidebar-section,
+  .hard-shadow-hover {
+    transition: none !important;
   }
 }
