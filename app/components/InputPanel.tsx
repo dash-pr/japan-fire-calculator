@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { FutureExpense, AccountToggles, NISA_FUNDS, IDeCoType } from "@/lib/fireCalculator";
 import { formatYen } from "@/lib/fireCalculator";
-import { X as XIcon } from "lucide-react";
+import { X as XIcon, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props {
     // Profile
@@ -32,9 +32,115 @@ interface Props {
     // Investment
     annualReturn: number;
     onAnnualReturn: (v: number) => void;
+    // SWP depletion age
+    swpDepletionAge: number;
+    onSwpDepletionAge: (v: number) => void;
+    // Advanced
+    postFireMonthlyIncome: number;
+    onPostFireMonthlyIncome: (v: number) => void;
     // Future expenses
     futureExpenses: FutureExpense[];
     onFutureExpenses: (v: FutureExpense[]) => void;
+}
+
+/* ─── Info tooltip ──────────────────────────────────────────────────────────────────────────── */
+function InfoTooltip({ text }: { text: string }) {
+    const [show, setShow] = useState(false);
+    const _ref = useRef<HTMLSpanElement>(null);
+    return (
+        <span
+            ref={_ref}
+            style={{ position: "relative", display: "inline-flex", alignItems: "center", marginLeft: 5, cursor: "help", verticalAlign: "middle" }}
+            onMouseEnter={() => setShow(true)}
+            onMouseLeave={() => setShow(false)}
+        >
+            <span style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 13, height: 13, borderRadius: "50%",
+                border: "1px solid rgba(255,255,255,0.28)",
+                fontSize: 8, fontFamily: "serif", fontStyle: "italic",
+                color: "rgba(255,255,255,0.38)", lineHeight: 1, userSelect: "none" as const,
+            }}>i</span>
+            {show && (
+                <div style={{
+                    position: "absolute", left: "100%", top: "50%", transform: "translateY(-50%)",
+                    marginLeft: 7, background: "#1c1c1c",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    padding: "8px 11px", width: 190, zIndex: 200, pointerEvents: "none",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                }}>
+                    <span style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 10.5, color: "rgba(255,255,255,0.72)", lineHeight: 1.55, display: "block" }}>
+                        {text}
+                    </span>
+                </div>
+            )}
+        </span>
+    );
+}
+
+/* ─── Slider + click-to-type value ─────────────────────────────────────────────────────────── */
+function SliderField({
+    label, value, onChange, min, max, step, format, info,
+}: {
+    label: string; value: number; onChange: (v: number) => void;
+    min: number; max: number; step: number;
+    format?: (v: number) => string; info?: string;
+}) {
+    const [editing, setEditing] = useState(false);
+    const [draft, setDraft] = useState("");
+    const display = format ? format(value) : String(value);
+
+    const commit = (raw: string) => {
+        const n = parseFloat(raw);
+        if (!isNaN(n)) onChange(Math.min(max, Math.max(min, n)));
+        setEditing(false);
+    };
+
+    return (
+        <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <label style={{
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+                    letterSpacing: "0.1em", textTransform: "uppercase" as const,
+                    color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center",
+                }}>
+                    {label}{info && <InfoTooltip text={info} />}
+                </label>
+                {editing ? (
+                    <input
+                        type="number" autoFocus value={draft}
+                        min={min} max={max} step={step}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onBlur={(e) => commit(e.currentTarget.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                            if (e.key === "Escape") setEditing(false);
+                        }}
+                        style={{
+                            width: 64, padding: "1px 4px", background: "rgba(255,255,255,0.1)",
+                            border: "1px solid rgba(204,0,0,0.6)", color: "#CC0000",
+                            fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+                            fontWeight: 700, outline: "none", textAlign: "right" as const,
+                        }}
+                    />
+                ) : (
+                    <span
+                        title="Click to type a value"
+                        onClick={() => { setDraft(String(value)); setEditing(true); }}
+                        style={{
+                            fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+                            fontWeight: 700, color: "#CC0000", letterSpacing: "0.02em",
+                            cursor: "text", borderBottom: "1px dashed rgba(204,0,0,0.35)", lineHeight: 1,
+                        }}
+                    >
+                        {display}
+                    </span>
+                )}
+            </div>
+            <input type="range" min={min} max={max} step={step} value={value}
+                onChange={(e) => onChange(Number(e.target.value))} />
+        </div>
+    );
 }
 
 /* ─── Section header (inverted sidebar) ─── */
@@ -68,12 +174,13 @@ function SectionHeader({ title }: { title: string }) {
 }
 
 /* ─── Label + children wrapper ─── */
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, info, children }: { label: string; info?: string; children: React.ReactNode }) {
     return (
         <div style={{ marginBottom: 14 }}>
             <label
                 style={{
-                    display: "block",
+                    display: "flex",
+                    alignItems: "center",
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 10,
                     fontWeight: 500,
@@ -83,7 +190,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
                     marginBottom: 5,
                 }}
             >
-                {label}
+                {label}{info && <InfoTooltip text={info} />}
             </label>
             {children}
         </div>
@@ -221,10 +328,15 @@ export default function InputPanel({
     onJuniorNisaBalance,
     annualReturn,
     onAnnualReturn,
+    swpDepletionAge,
+    onSwpDepletionAge,
+    postFireMonthlyIncome,
+    onPostFireMonthlyIncome,
     futureExpenses,
     onFutureExpenses,
 }: Props) {
     const [showFunds, setShowFunds] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
     const [newFe, setNewFe] = useState({ label: "", yearsFromNow: 5, amount: 5_000_000 });
 
     const addExpense = () => {
@@ -239,19 +351,8 @@ export default function InputPanel({
     const removeExpense = (id: string) =>
         onFutureExpenses(futureExpenses.filter((f) => f.id !== id));
 
-    const sliderLabelStyle: React.CSSProperties = {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "baseline",
-        marginBottom: 6,
-    };
-    const sliderValueStyle: React.CSSProperties = {
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 13,
-        fontWeight: 700,
-        color: "#CC0000",
-        letterSpacing: "0.02em",
-    };
+    const fmtPct = (v: number) => `${v}%`;
+    const fmtAge = (v: number) => `age\u00a0${v}`;
 
     return (
         <div
@@ -265,97 +366,57 @@ export default function InputPanel({
         >
             {/* ── Profile ── */}
             <SectionHeader title="Profile" />
-            <Field label="Current Age">
-                <NumberInput value={currentAge} onChange={onCurrentAge} min={18} max={80} />
-            </Field>
-            <Field label="Target FIRE Age">
-                <NumberInput value={targetFireAge} onChange={onTargetFireAge} min={currentAge + 1} max={80} />
-            </Field>
+            <SliderField
+                label="Current Age" value={currentAge} onChange={onCurrentAge}
+                min={18} max={70} step={1} format={fmtAge}
+                info="Your age today. The simulation starts from this point."
+            />
+            <SliderField
+                label="Retirement Age" value={targetFireAge}
+                onChange={(v) => onTargetFireAge(Math.max(currentAge + 1, v))}
+                min={currentAge + 1} max={80} step={1} format={fmtAge}
+                info="Target age to stop working and start drawing down your portfolio (FIRE date)."
+            />
+            <SliderField
+                label="Portfolio Depletes at" value={swpDepletionAge}
+                onChange={(v) => onSwpDepletionAge(Math.max(targetFireAge + 1, v))}
+                min={targetFireAge + 1} max={100} step={1} format={fmtAge}
+                info="SWP is sized so your portfolio reaches exactly ¥0 at this age. Lower age = higher monthly income. Default 90."
+            />
 
             {/* ── Income & Expenses ── */}
             <SectionHeader title="Income & Expenses" />
-            <Field label="Monthly Income">
+            <Field label="Monthly Income" info="Current gross salary per month. Grows at your salary growth rate each year.">
                 <NumberInput value={monthlyIncome} onChange={onMonthlyIncome} step={10000} prefix="¥" />
             </Field>
-            <Field label="Working Monthly Expenses">
+            <Field label="Working Monthly Expenses" info="Living costs while you are still working. Grows with inflation.">
                 <NumberInput value={monthlyExpenses} onChange={onMonthlyExpenses} step={10000} prefix="¥" />
             </Field>
-            <Field label="Post-FIRE Monthly Budget">
+            <Field label="Post-FIRE Monthly Budget" info="Expected monthly spending in retirement, in today's yen. Adjusted for inflation at retirement date.">
                 <NumberInput value={postFireMonthlyExpenses} onChange={onPostFireMonthlyExpenses} step={10000} prefix="¥" />
             </Field>
 
-            {/* Salary growth slider */}
-            <div style={{ marginBottom: 14 }}>
-                <div style={sliderLabelStyle}>
-                    <label
-                        style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 10,
-                            letterSpacing: "0.1em",
-                            textTransform: "uppercase",
-                            color: "rgba(255,255,255,0.4)",
-                        }}
-                    >
-                        Salary Growth / yr
-                    </label>
-                    <span style={sliderValueStyle}>{salaryIncreaseRate}%</span>
-                </div>
-                <input
-                    type="range"
-                    min={0} max={10} step={0.5}
-                    value={salaryIncreaseRate}
-                    onChange={(e) => onSalaryIncreaseRate(Number(e.target.value))}
-                />
-            </div>
-
-            {/* Inflation slider */}
-            <div style={{ marginBottom: 14 }}>
-                <div style={sliderLabelStyle}>
-                    <label
-                        style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 10,
-                            letterSpacing: "0.1em",
-                            textTransform: "uppercase",
-                            color: "rgba(255,255,255,0.4)",
-                        }}
-                    >
-                        Annual Inflation
-                    </label>
-                    <span style={sliderValueStyle}>{annualInflation}%</span>
-                </div>
-                <input
-                    type="range"
-                    min={0} max={8} step={0.25}
-                    value={annualInflation}
-                    onChange={(e) => onAnnualInflation(Number(e.target.value))}
-                />
-            </div>
+            <SliderField
+                label="Salary Growth / yr" value={salaryIncreaseRate}
+                onChange={onSalaryIncreaseRate}
+                min={0} max={10} step={0.5} format={fmtPct}
+                info="Annual % salary increase. Boosts future savings capacity."
+            />
+            <SliderField
+                label="Annual Inflation" value={annualInflation}
+                onChange={onAnnualInflation}
+                min={0} max={8} step={0.25} format={fmtPct}
+                info="Expected price inflation. Erodes purchasing power and grows post-FIRE expenses."
+            />
 
             {/* ── Investment Return ── */}
             <SectionHeader title="Investment Return" />
-            <div style={{ marginBottom: 10 }}>
-                <div style={sliderLabelStyle}>
-                    <label
-                        style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 10,
-                            letterSpacing: "0.1em",
-                            textTransform: "uppercase",
-                            color: "rgba(255,255,255,0.4)",
-                        }}
-                    >
-                        Expected Annual Return
-                    </label>
-                    <span style={sliderValueStyle}>{annualReturn}%</span>
-                </div>
-                <input
-                    type="range"
-                    min={1} max={15} step={0.5}
-                    value={annualReturn}
-                    onChange={(e) => onAnnualReturn(Number(e.target.value))}
-                />
-            </div>
+            <SliderField
+                label="Expected Annual Return" value={annualReturn}
+                onChange={onAnnualReturn}
+                min={1} max={15} step={0.5} format={fmtPct}
+                info="Assumed annual return across all accounts. Use the fund picker below to auto-fill from real fund data."
+            />
 
             {/* Fund picker toggle */}
             <button
@@ -457,6 +518,35 @@ export default function InputPanel({
                 checked={accounts.taxableEnabled}
                 onChange={(v) => onAccounts({ ...accounts, taxableEnabled: v })}
             />
+
+            {/* ── Advanced Options (collapsible) ── */}
+            <button
+                onClick={() => setShowAdvanced((s) => !s)}
+                style={{
+                    width: "100%", padding: "9px 0 8px",
+                    background: "transparent", border: "none",
+                    borderTop: "1px solid rgba(255,255,255,0.12)",
+                    color: "rgba(255,255,255,0.4)",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 9, fontWeight: 700, letterSpacing: "0.22em",
+                    textTransform: "uppercase", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    marginTop: 8, marginBottom: showAdvanced ? 12 : 8,
+                }}
+            >
+                Advanced Options
+                {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            {showAdvanced && (
+                <div style={{ marginBottom: 4 }}>
+                    <Field
+                        label="Post-FIRE Side Income / mo"
+                        info="Monthly income during retirement (pension, part-time, rental). In today's yen. Shown in the Cash Flow tab."
+                    >
+                        <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
+                    </Field>
+                </div>
+            )}
 
             {/* ── Future Expenses ── */}
             <SectionHeader title="Future Lump-Sum Expenses" />

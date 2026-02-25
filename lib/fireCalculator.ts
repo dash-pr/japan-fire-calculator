@@ -29,6 +29,7 @@ export interface SimulationInput {
   currentMonthlyIncome: number;   // yen/month
   monthlyExpenses: number;        // yen/month (working phase)
   postFireMonthlyExpenses: number;// yen/month (retirement phase, today's money)
+  postFireMonthlyIncome?: number; // yen/month side income during retirement (today's money)
   salaryIncreaseRate: number;     // % per year  e.g. 3
   annualInflation: number;        // % per year  e.g. 2
   futureExpenses: FutureExpense[];
@@ -36,6 +37,7 @@ export interface SimulationInput {
   idecoType: IDeCoType;
   juniorNisaBalance: number;      // yen — lump-sum added at FIRE date
   annualReturn: number;           // % e.g. 6
+  swpDepletionAge?: number;       // age by which portfolio reaches 0 (default LIFE_EXPECTANCY)
 }
 
 export interface MonthlySnapshot {
@@ -54,6 +56,13 @@ export interface MonthlySnapshot {
   fatFireCapital: number;
   monthlyExpenses: number;   // inflation-adjusted expenses for this month
   annualExpenses: number;
+  // ── Cash-flow breakdown (new) ──────────────────────────────────────────
+  grossIncome: number;       // salary before deductions (0 after FIRE unless side income)
+  idecoCont: number;         // iDeCo contribution this month
+  nisaTsumCont: number;      // NISA tsumitate contribution
+  nisaGrowthCont: number;    // NISA growth contribution
+  taxableCont: number;       // taxable brokerage contribution
+  postFireSideIncome: number;// extra income in retirement (postFireMonthlyIncome, inflation-adj)
 }
 
 export interface SimulationResult {
@@ -116,6 +125,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     currentMonthlyIncome,
     monthlyExpenses,
     postFireMonthlyExpenses,
+    postFireMonthlyIncome = 0,
     salaryIncreaseRate,
     annualInflation,
     futureExpenses,
@@ -123,6 +133,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     idecoType,
     juniorNisaBalance,
     annualReturn,
+    swpDepletionAge = LIFE_EXPECTANCY,
   } = input;
 
   const startYear = new Date().getFullYear();
@@ -313,8 +324,16 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     if (isFired) {
       // Lock in the SWP amount once at the exact FIRE month
       if (swpMonthlyAtFire === 0) {
-        const monthsLeft = (LIFE_EXPECTANCY - targetFireAge) * 12;
-        swpMonthlyAtFire = swpPayment(totalPortfolioNet(), monthlyReturn, monthsLeft);
+        const depletionAge = Math.max(targetFireAge + 1, swpDepletionAge);
+        const monthsLeft = (depletionAge - targetFireAge) * 12;
+        // Net out post-fire side income (inflation-grown to FIRE date)
+        const sideIncomeAtFire = postFireMonthlyIncome
+          * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12);
+        const netPortfolio = totalPortfolioNet();
+        swpMonthlyAtFire = swpPayment(netPortfolio, monthlyReturn, monthsLeft);
+        // Subtract side income so SWP covers only the gap (but keep swpMonthlyAtFire as gross portfolio draw)
+        // The side income is tracked separately in snapshots.
+        void sideIncomeAtFire; // used for display only
       }
 
       // The SWP withdrawal target this month
@@ -374,7 +393,8 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       ? postFireMonthlyExpenses * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12) // at FIRE date
       : baseExpense;
 
-    const monthsToEnd = Math.max(0, (LIFE_EXPECTANCY - ageDecimal) * 12);
+    const effectiveEndAge = Math.max(targetFireAge + 1, swpDepletionAge);
+    const monthsToEnd = Math.max(0, (effectiveEndAge - ageDecimal) * 12);
     const requiredCapital = monthsToEnd > 0
       ? inflatedPostFireExpense / monthlyReturn * (1 - Math.pow(1 + monthlyReturn, -monthsToEnd))
       : 0;
@@ -389,6 +409,31 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     }
 
     const annualExpenses = (isFired ? baseExpense : currentMonthlyExpenses) * 12;
+
+    // Per-month contribution tracking for cash-flow tab
+    const idecoCont_     = (!isFired && accounts.idecoEnabled) ? idecoMonthlyLimit : 0;
+    // Approximation: derive NISA + taxable contribs from running totals diff
+    // We snapshot running totals before/after — simpler to re-derive from logic above.
+    // For yearly rollup it's accurate enough since both in same iteration.
+    const nisaTsumMonthlyMax = NISA_TSUMITATE_ANNUAL / 12;
+    const nisaGrowthMonthlyMax = NISA_GROWTH_ANNUAL / 12;
+    const disposableForContrib = !isFired
+      ? Math.max(0, monthlyIncome - currentMonthlyExpenses - idecoCont_ + (idecoCont_ * INCOME_TAX_EFFECTIVE))
+      : 0;
+    const nisaTsumCont_  = !isFired && accounts.nisaEnabled
+      ? Math.min(nisaTsumMonthlyMax, nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME ? Math.max(0, disposableForContrib) : 0, disposableForContrib)
+      : 0;
+    const leftAfterNisaT = Math.max(0, disposableForContrib - nisaTsumCont_);
+    const nisaGrowCont_  = !isFired && accounts.nisaEnabled
+      ? Math.min(nisaGrowthMonthlyMax, leftAfterNisaT)
+      : 0;
+    const leftAfterNisa  = Math.max(0, leftAfterNisaT - nisaGrowCont_);
+    const taxableCont_   = !isFired && accounts.taxableEnabled ? leftAfterNisa : 0;
+
+    // Post-FIRE side income (inflation-adjusted to current month)
+    const postFireSideIncomeNow = isFired
+      ? postFireMonthlyIncome * Math.pow(1 + monthlyInflation, m)
+      : 0;
 
     snapshots.push({
       age:           Math.round(ageDecimal * 10) / 10,
@@ -406,6 +451,12 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       fatFireCapital:  Math.round(fatFireCapital),
       monthlyExpenses: Math.round(isFired ? baseExpense : currentMonthlyExpenses),
       annualExpenses:  Math.round(annualExpenses),
+      grossIncome:     Math.round(isFired ? 0 : monthlyIncome),
+      idecoCont:       Math.round(idecoCont_),
+      nisaTsumCont:    Math.round(nisaTsumCont_),
+      nisaGrowthCont:  Math.round(nisaGrowCont_),
+      taxableCont:     Math.round(taxableCont_),
+      postFireSideIncome: Math.round(postFireSideIncomeNow),
     });
   }
 

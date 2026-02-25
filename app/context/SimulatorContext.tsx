@@ -17,6 +17,7 @@ const DEFAULT_INPUT: SimulationInput = {
   currentMonthlyIncome: 500_000,
   monthlyExpenses: 250_000,
   postFireMonthlyExpenses: 200_000,
+  postFireMonthlyIncome: 0,
   salaryIncreaseRate: 3,
   annualInflation: 2,
   futureExpenses: [],
@@ -29,6 +30,7 @@ const DEFAULT_INPUT: SimulationInput = {
   idecoType: "freelancer",
   juniorNisaBalance: 0,
   annualReturn: 6,
+  swpDepletionAge: 90,
 };
 
 function useDebounced<T>(value: T, delay: number) {
@@ -52,6 +54,8 @@ export interface SimulatorContextValue {
   setMonthlyExpenses: (v: number) => void;
   postFireMonthlyExpenses: number;
   setPostFireMonthlyExpenses: (v: number) => void;
+  postFireMonthlyIncome: number;
+  setPostFireMonthlyIncome: (v: number) => void;
   salaryIncreaseRate: number;
   setSalaryIncreaseRate: (v: number) => void;
   annualInflation: number;
@@ -66,6 +70,8 @@ export interface SimulatorContextValue {
   setFutureExpenses: (v: FutureExpense[]) => void;
   juniorNisaBalance: number;
   setJuniorNisaBalance: (v: number) => void;
+  swpDepletionAge: number;
+  setSwpDepletionAge: (v: number) => void;
   result: SimulationResult | null;
   currentYear: number;
 }
@@ -79,6 +85,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
   const [monthlyIncome, setMonthlyIncome] = useState(DEFAULT_INPUT.currentMonthlyIncome);
   const [monthlyExpenses, setMonthlyExpenses] = useState(DEFAULT_INPUT.monthlyExpenses);
   const [postFireMonthlyExpenses, setPostFireMonthlyExpenses] = useState(DEFAULT_INPUT.postFireMonthlyExpenses);
+  const [postFireMonthlyIncome, setPostFireMonthlyIncome] = useState(DEFAULT_INPUT.postFireMonthlyIncome ?? 0);
   const [salaryIncreaseRate, setSalaryIncreaseRate] = useState(DEFAULT_INPUT.salaryIncreaseRate);
   const [annualInflation, setAnnualInflation] = useState(DEFAULT_INPUT.annualInflation);
   const [accounts, setAccounts] = useState<AccountToggles>(DEFAULT_INPUT.accounts);
@@ -86,6 +93,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
   const [annualReturn, setAnnualReturn] = useState(DEFAULT_INPUT.annualReturn);
   const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
   const [juniorNisaBalance, setJuniorNisaBalance] = useState(DEFAULT_INPUT.juniorNisaBalance);
+  const [swpDepletionAge, setSwpDepletionAge] = useState(DEFAULT_INPUT.swpDepletionAge ?? 90);
   const [result, setResult] = useState<SimulationResult | null>(null);
 
   const input: SimulationInput = {
@@ -94,6 +102,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     currentMonthlyIncome: monthlyIncome,
     monthlyExpenses,
     postFireMonthlyExpenses,
+    postFireMonthlyIncome,
     salaryIncreaseRate,
     annualInflation,
     futureExpenses,
@@ -101,6 +110,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     idecoType,
     juniorNisaBalance,
     annualReturn,
+    swpDepletionAge,
   };
 
   const debouncedInput = useDebounced(input, 150);
@@ -122,6 +132,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         monthlyIncome, setMonthlyIncome,
         monthlyExpenses, setMonthlyExpenses,
         postFireMonthlyExpenses, setPostFireMonthlyExpenses,
+        postFireMonthlyIncome, setPostFireMonthlyIncome,
         salaryIncreaseRate, setSalaryIncreaseRate,
         annualInflation, setAnnualInflation,
         accounts, setAccounts,
@@ -129,6 +140,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         annualReturn, setAnnualReturn,
         futureExpenses, setFutureExpenses,
         juniorNisaBalance, setJuniorNisaBalance,
+        swpDepletionAge, setSwpDepletionAge,
         result,
         currentYear: new Date().getFullYear(),
       }}

@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/",           label: "Dashboard",      short: "Front Page" },
   { href: "/chart",      label: "Portfolio Chart", short: "Chart"      },
   { href: "/breakdown",  label: "Data Table",      short: "Breakdown"  },
+  { href: "/cashflow",   label: "Cash Flow",       short: "Cash Flow"  },
   { href: "/funds",      label: "Fund Guide",      short: "Funds"      },
 ];
 
@@ -41,6 +42,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setFutureExpenses,
     juniorNisaBalance,
     setJuniorNisaBalance,
+    swpDepletionAge,
+    setSwpDepletionAge,
+    postFireMonthlyIncome,
+    setPostFireMonthlyIncome,
   } = useSimulator();
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -286,6 +291,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onJuniorNisaBalance={setJuniorNisaBalance}
               annualReturn={annualReturn}
               onAnnualReturn={setAnnualReturn}
+              swpDepletionAge={swpDepletionAge}
+              onSwpDepletionAge={setSwpDepletionAge}
+              postFireMonthlyIncome={postFireMonthlyIncome}
+              onPostFireMonthlyIncome={setPostFireMonthlyIncome}
               futureExpenses={futureExpenses}
               onFutureExpenses={setFutureExpenses}
             />

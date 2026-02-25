@@ -5,7 +5,7 @@ import YearlyTable from "@/app/components/YearlyTable";
 import { useSimulator } from "@/app/context/SimulatorContext";
 
 export default function BreakdownPage() {
-  const { result } = useSimulator();
+  const { result, targetFireAge } = useSimulator();
 
   return (
     <>
@@ -26,11 +26,11 @@ export default function BreakdownPage() {
       >
         <span>Year-by-Year Breakdown</span>
         <span style={{ fontSize: 9, letterSpacing: "0.12em" }}>
-          December snapshot · every year from now to age 95
+          December snapshot · accumulation → retirement → depletion
         </span>
       </div>
 
-      <YearlyTable result={result} maxTableHeight="none" />
+      <YearlyTable result={result} targetFireAge={targetFireAge} maxTableHeight="none" />
     </>
   );
 }
