@@ -135,6 +135,7 @@ export default function PortfolioChart({ result }: Props) {
             }}
         >
             <div
+                className="chart-header-row"
                 style={{
                     padding: "0 20px 14px",
                     display: "flex",
@@ -155,7 +156,7 @@ export default function PortfolioChart({ result }: Props) {
                 >
                     Portfolio Growth
                 </div>
-                <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+                <div className="chart-indicators" style={{ display: "flex", gap: 20, alignItems: "center" }}>
                     {leanYear && (
                         <span
                             style={{

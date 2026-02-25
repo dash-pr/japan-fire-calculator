@@ -4,6 +4,14 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { NISA_FUNDS, NisaFund, SectorWeights } from "@/lib/fireCalculator";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from "recharts";
 
+// ── Live return data interface ──────────────────────────────────────────────
+interface ReturnData {
+  return1y: number;
+  return3y: number;
+  return5y: number;
+  return10y: number;
+}
+
 // ── Sector colour palette (editorial greyscale + accent) ──────────────────────
 const SECTOR_COLORS: Record<keyof SectorWeights, string> = {
   "US Equity":      "#111111",
@@ -132,13 +140,38 @@ export default function FundsPage() {
   const [basket, setBasket] = useState<BasketItem[]>([]);
   const [page, setPage] = useState(0);
   const [expandedTicker, setExpandedTicker] = useState<string | null>(null);
+  const [liveReturns, setLiveReturns] = useState<Record<string, ReturnData> | null>(null);
+  const [dataStatus, setDataStatus] = useState<"loading" | "live" | "fallback">("loading");
 
   const PAGE_SIZE = 10;
 
-  const categories = useMemo(() => Array.from(new Set(NISA_FUNDS.map((f) => f.category))), []);
+  // ── Fetch live fund return data on mount ────────────────────────────────
+  useEffect(() => {
+    fetch("/api/fund-returns")
+      .then((res) => res.json())
+      .then((data) => {
+        setLiveReturns(data);
+        setDataStatus("live");
+      })
+      .catch(() => {
+        setDataStatus("fallback");
+      });
+  }, []);
+
+  // ── Merge live returns into fund data ──────────────────────────────────
+  const funds = useMemo(() =>
+    NISA_FUNDS.map((f) =>
+      liveReturns?.[f.ticker]
+        ? { ...f, ...liveReturns[f.ticker] }
+        : f
+    ),
+    [liveReturns]
+  );
+
+  const categories = useMemo(() => Array.from(new Set(funds.map((f) => f.category))), [funds]);
 
   const filtered = useMemo(() => {
-    return NISA_FUNDS
+    return funds
       .filter((f) => !filterCat || f.category === filterCat)
       .filter((f) => !search || f.name.toLowerCase().includes(search.toLowerCase()) || f.benchmark.toLowerCase().includes(search.toLowerCase()) || f.ticker.toLowerCase().includes(search.toLowerCase()))
       .slice()
@@ -147,7 +180,7 @@ export default function FundsPage() {
         const bv = b[sortKey] as number;
         return sortDir === "desc" ? bv - av : av - bv;
       });
-  }, [sortKey, sortDir, filterCat, search]);
+  }, [sortKey, sortDir, filterCat, search, funds]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -197,7 +230,7 @@ export default function FundsPage() {
     let r1 = 0, r3 = 0, r5 = 0, r10 = 0, exp = 0, expectedRet = 0;
     const blended: SectorWeights = { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 };
     for (const item of basket) {
-      const fund = NISA_FUNDS.find((f) => f.ticker === item.ticker);
+      const fund = funds.find((f) => f.ticker === item.ticker);
       if (!fund) continue;
       const w = item.weight / total;
       r1 += fund.return1y * w;
@@ -209,9 +242,9 @@ export default function FundsPage() {
       for (const k of SECTOR_KEYS) { blended[k] = (blended[k] ?? 0) + (fund.sectorWeights[k] ?? 0) * w; }
     }
     return { r1, r3, r5, r10, exp, expectedRet, blended };
-  }, [basket]);
+  }, [basket, funds]);
 
-  const maxReturn = Math.max(...NISA_FUNDS.map((f) => f.return5y));
+  const maxReturn = Math.max(...funds.map((f) => f.return5y));
 
   const ColHead = ({ label, sk }: { label: string; sk: SortKey }) => (
     <th onClick={() => toggleSort(sk)} style={{
@@ -228,17 +261,20 @@ export default function FundsPage() {
   return (
     <>
       {/* Masthead */}
-      <div style={{ borderBottom: "4px solid var(--ink)", paddingBottom: 6, marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div style={{ borderBottom: "4px solid var(--ink)", paddingBottom: 6, marginBottom: 20, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 8 }}>
         <div>
           <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 4 }}>NISA Fund Guide</div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>Fund Encyclopedia & Basket Builder</div>
         </div>
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--n500)", textAlign: "right", lineHeight: 1.6 }}>
-          {filtered.length} funds · Returns in JPY · Annualised<br />Historical estimates · Not financial advice
+          {filtered.length} funds · Returns in JPY · Annualised<br />
+          <span style={{ color: dataStatus === "live" ? "#2a7a2a" : "var(--n500)" }}>
+            {dataStatus === "loading" ? "Fetching live data..." : dataStatus === "live" ? "● Live · Yahoo Finance" : "● Estimates"}
+          </span>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+      <div className="funds-layout" style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
 
         {/* ── LEFT: Encyclopedia ── */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -337,7 +373,7 @@ export default function FundsPage() {
                       {isExpanded && (
                         <tr style={{ borderTop: "1px solid var(--muted)", background: "var(--n100)" }}>
                           <td colSpan={10} style={{ padding: "16px 12px" }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                            <div className="responsive-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                               {/* Left: Description and details */}
                               <div>
                                 <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 8 }}>About This Fund</div>
@@ -436,7 +472,7 @@ export default function FundsPage() {
         </div>
 
         {/* ── RIGHT: Basket Builder ── */}
-        <div style={{ width: 300, flexShrink: 0 }}>
+        <div className="funds-basket" style={{ width: 300, flexShrink: 0 }}>
           <div style={{ borderBottom: "2px solid var(--ink)", paddingBottom: 8, marginBottom: 14 }}>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 3 }}>Portfolio Basket</div>
             <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>Build Your Mix</div>
@@ -460,7 +496,7 @@ export default function FundsPage() {
 
               {/* Fund rows */}
               {basket.map((item) => {
-                const fund = NISA_FUNDS.find((f) => f.ticker === item.ticker);
+                const fund = funds.find((f) => f.ticker === item.ticker);
                 if (!fund) return null;
                 return (
                   <div key={item.ticker} style={{ border: "1px solid var(--muted)", padding: "10px 12px", marginBottom: 8, background: "var(--paper)" }}>

@@ -546,6 +546,7 @@ export interface NisaFund {
   sectorWeights: SectorWeights;
   nisaTsumitateEligible: boolean;   // 積立投資枠 eligible (diversified index funds only)
   nisaGrowthEligible: boolean;      // 成長投資枠 eligible (most investment trusts)
+  yahooTicker: string;              // Yahoo Finance benchmark proxy ticker for live data
 }
 
 export const NISA_FUNDS: NisaFund[] = [
@@ -565,6 +566,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 63, "Japan Equity": 6, "Europe Equity": 17, "Emerging Mkts": 11, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 3 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "ACWI",
   },
   {
     name: "eMAXIS Slim 米国株式(S&P500)",
@@ -582,6 +584,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "^GSPC",
   },
   {
     name: "楽天・全米株式インデックスファンド",
@@ -599,6 +602,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "^GSPC",
   },
   {
     name: "SBI・V・S&P500インデックスファンド",
@@ -616,6 +620,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "^GSPC",
   },
   {
     name: "eMAXIS Slim 先進国株式インデックス",
@@ -633,6 +638,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 72, "Japan Equity": 0, "Europe Equity": 22, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 6 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "EFA",
   },
   {
     name: "eMAXIS Slim バランス(8資産均等型)",
@@ -650,6 +656,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 12, "Japan Equity": 13, "Europe Equity": 13, "Emerging Mkts": 12, "Japan REIT": 12, "Global REIT": 13, "Bonds": 25, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "ACWI",
   },
   {
     name: "ニッセイ・インデックスファンド(世界株式)",
@@ -667,6 +674,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 62, "Japan Equity": 7, "Europe Equity": 17, "Emerging Mkts": 11, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 3 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "ACWI",
   },
   {
     name: "eMAXIS Slim 新興国株式インデックス",
@@ -684,6 +692,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 100, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "EEM",
   },
   // ── Japan Equity (4 funds) ────────────────────────────────────────────
   {
@@ -702,6 +711,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 100, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "1306.T",
   },
   {
     name: "eMAXIS Slim 国内株式(日経平均)",
@@ -719,6 +729,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 100, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "^N225",
   },
   {
     name: "ニッセイ TOPIXインデックスファンド",
@@ -736,6 +747,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 100, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "1306.T",
   },
   {
     name: "たわらノーロード 国内株式(TOPIX)",
@@ -753,6 +765,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 100, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "1306.T",
   },
   // ── Japan REIT (4 funds) ───────────────────────────────────────────────
   {
@@ -771,6 +784,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 100, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "1343.T",
   },
   {
     name: "ニッセイJリートインデックスファンド",
@@ -788,6 +802,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 100, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "1343.T",
   },
   {
     name: "Smart-i Jリートインデックス",
@@ -805,6 +820,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 100, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "1343.T",
   },
   {
     name: "たわらノーロード 国内リート",
@@ -822,6 +838,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 100, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "1343.T",
   },
   // ── Global REIT (3 funds) ──────────────────────────────────────────────
   {
@@ -840,6 +857,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 100, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "VNQI",
   },
   {
     name: "たわらノーロード 先進国リート",
@@ -857,6 +875,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 100, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "VNQI",
   },
   {
     name: "ニッセイ グローバルリートインデックスファンド",
@@ -874,6 +893,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 100, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "VNQI",
   },
   // ── Bonds (3 funds) ────────────────────────────────────────────────────
   {
@@ -892,6 +912,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 100, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "2510.T",
   },
   {
     name: "eMAXIS Slim 先進国債券インデックス",
@@ -909,6 +930,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 100, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "IAGG",
   },
   {
     name: "三菱UFJ 先進国債券インデックスファンド(ヘッジあり)",
@@ -926,6 +948,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 100, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "IAGG",
   },
   // ── US Equity Additions (4 funds) ──────────────────────────────────────
   {
@@ -944,6 +967,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: false,
     nisaGrowthEligible: true,
+    yahooTicker: "^NDX",
   },
   {
     name: "iFreeNEXT NASDAQ100インデックス",
@@ -961,6 +985,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: false,
     nisaGrowthEligible: true,
+    yahooTicker: "^NDX",
   },
   {
     name: "楽天・米国高配当株式インデックスファンド",
@@ -978,6 +1003,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "VYM",
   },
   {
     name: "iFreeNEXT FANG+インデックス",
@@ -995,6 +1021,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 100, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: false,
     nisaGrowthEligible: true,
+    yahooTicker: "FNGS",
   },
   // ── Global Equity Additions (3 funds) ──────────────────────────────────
   {
@@ -1013,6 +1040,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 60, "Japan Equity": 6, "Europe Equity": 16, "Emerging Mkts": 15, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 3 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "ACWI",
   },
   {
     name: "SBI・V・全世界株式インデックスファンド",
@@ -1030,6 +1058,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 60, "Japan Equity": 6, "Europe Equity": 16, "Emerging Mkts": 15, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 3 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "ACWI",
   },
   {
     name: "たわらノーロード 全世界株式",
@@ -1047,6 +1076,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 60, "Japan Equity": 6, "Europe Equity": 16, "Emerging Mkts": 15, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 3 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "ACWI",
   },
   // ── Developed Markets Additions (2 funds) ──────────────────────────────
   {
@@ -1065,6 +1095,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 72, "Japan Equity": 0, "Europe Equity": 22, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 6 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "EFA",
   },
   {
     name: "ニッセイ外国株式インデックスファンド",
@@ -1082,6 +1113,7 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 72, "Japan Equity": 0, "Europe Equity": 22, "Emerging Mkts": 0, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 6 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "EFA",
   },
   // ── Emerging Markets Addition (1 fund) ──────────────────────────────────
   {
@@ -1100,5 +1132,6 @@ export const NISA_FUNDS: NisaFund[] = [
     sectorWeights: { "US Equity": 0, "Japan Equity": 0, "Europe Equity": 0, "Emerging Mkts": 100, "Japan REIT": 0, "Global REIT": 0, "Bonds": 0, "Other": 0 },
     nisaTsumitateEligible: true,
     nisaGrowthEligible: true,
+    yahooTicker: "EEM",
   },
 ];

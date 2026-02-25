@@ -41,6 +41,7 @@ export default function Home() {
       {/* Quick-stats row */}
       {result && (
         <div
+          className="responsive-grid-3"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
@@ -113,6 +114,7 @@ export default function Home() {
 
       {/* Navigation cards to other sections */}
       <div
+        className="responsive-grid-3"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",

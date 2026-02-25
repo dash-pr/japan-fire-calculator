@@ -25,15 +25,15 @@ function StatCard({
 }) {
     return (
         <div
-            className="hard-shadow-hover"
+            className="hard-shadow-hover fire-stat-card"
             style={{
-                flex: 1,
-                minWidth: 140,
                 padding: "18px 20px 16px",
-                borderRight: isLast ? "none" : "1px solid var(--ink)",
+                borderRight: "1px solid var(--muted)",
+                borderBottom: "1px solid var(--muted)",
                 borderTop: highlight ? "4px solid var(--accent)" : "4px solid transparent",
                 background: highlight ? "#FFF8F8" : "var(--paper)",
                 cursor: "default",
+                minWidth: 0,
             }}
         >
             {/* Category label */}
@@ -160,10 +160,11 @@ export default function FireSummary({ result, targetFireAge, currentYear }: Prop
 
     return (
         <div
+            className="responsive-grid-fire-summary"
             style={{
                 border: "1px solid var(--ink)",
-                display: "flex",
-                flexWrap: "wrap",
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)",
                 marginBottom: 0,
             }}
         >

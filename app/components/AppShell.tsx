@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSimulator } from "@/app/context/SimulatorContext";
@@ -17,6 +17,8 @@ const NAV_ITEMS = [
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const {
     currentAge,
     setCurrentAge,
@@ -60,6 +62,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div
+      className="app-shell"
       style={{
         height: "100vh",
         overflow: "hidden",
@@ -72,6 +75,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <header style={{ borderTop: "5px solid var(--ink)", borderBottom: "1px solid var(--ink)", flexShrink: 0 }}>
         {/* Edition line */}
         <div
+          className="mobile-hide"
           style={{
             borderBottom: "1px solid var(--ink)",
             padding: "4px 24px",
@@ -114,7 +118,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             gap: 16,
           }}
         >
-          <div style={{ minWidth: 180, textAlign: "left" }}>
+          <div className="mobile-hide" style={{ minWidth: 180, textAlign: "left" }}>
             <p
               style={{
                 margin: 0,
@@ -134,7 +138,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             style={{
               margin: 0,
               fontFamily: "'Playfair Display', 'Times New Roman', serif",
-              fontSize: "clamp(28px, 5vw, 56px)",
+              fontSize: "clamp(22px, 5vw, 56px)",
               fontWeight: 900,
               lineHeight: 1,
               letterSpacing: "-0.02em",
@@ -146,7 +150,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             The Japan<br />FIRE Gazette
           </h1>
 
-          <div style={{ minWidth: 180, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+          <div className="mobile-hide" style={{ minWidth: 180, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
             <div
               style={{
                 background: "var(--accent)",
@@ -167,6 +171,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* ── SECTION NAV ──────────────────────────────────────────────────── */}
       <nav
+        className="responsive-nav"
         style={{
           borderBottom: "3px solid var(--ink)",
           display: "flex",
@@ -205,12 +210,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div style={{ flex: 1, borderLeft: "none" }} />
       </nav>
 
+      {/* ── Mobile sidebar overlay ── */}
+      <div
+        className={`mobile-sidebar-overlay${sidebarOpen ? " open" : ""}`}
+        onClick={closeSidebar}
+      />
+
       {/* ── BODY ROW: sidebar + content ───────────────────────────────────── */}
       <div style={{ flex: 1, minHeight: 0, display: "flex", overflow: "hidden" }}>
 
         {/* ── BLACK SIDEBAR ── */}
         <aside
-          className="sidebar-section newsprint-texture"
+          className={`sidebar-section newsprint-texture${sidebarOpen ? " mobile-open" : ""}`}
           style={{
             width: 292,
             minWidth: 260,
@@ -307,6 +318,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             display: "flex",
             flexDirection: "column",
           }}
+          className="main-content"
         >
           {children}
 
@@ -366,6 +378,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
+
+      {/* ── Mobile sidebar toggle FAB ── */}
+      <button
+        className="mobile-sidebar-toggle"
+        onClick={() => setSidebarOpen((s) => !s)}
+        aria-label={sidebarOpen ? "Close inputs" : "Open inputs"}
+      >
+        {sidebarOpen ? "✕" : "☰"}
+      </button>
     </div>
   );
 }

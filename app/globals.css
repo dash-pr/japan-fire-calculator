@@ -263,3 +263,159 @@ input[type="checkbox"] {
   padding: 12px 0;
   user-select: none;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Mobile sidebar overlay ── */
+.mobile-sidebar-overlay {
+  display: none;
+}
+
+/* ── Mobile sidebar toggle button ── */
+.mobile-sidebar-toggle {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  html, body {
+    overflow: auto;
+    height: auto;
+  }
+
+  /* App shell becomes scrollable on mobile */
+  .app-shell {
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+  }
+
+  /* Body row stacks on mobile since sidebar is a drawer */
+  .app-shell > div:last-of-type {
+    overflow: visible !important;
+  }
+
+  /* Sidebar toggle button */
+  .mobile-sidebar-toggle {
+    display: flex !important;
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 1000;
+    width: 52px;
+    height: 52px;
+    background: #111111;
+    color: #F9F9F7;
+    border: 2px solid rgba(255,255,255,0.2);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  /* Sidebar overlay */
+  .mobile-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mobile-sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Sidebar as drawer */
+  .sidebar-section {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 85vw !important;
+    max-width: 340px !important;
+    min-width: unset !important;
+    z-index: 950 !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .sidebar-section.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Header adjustments */
+  .mobile-hide {
+    display: none !important;
+  }
+
+  /* ── Responsive grid helpers ── */
+  .responsive-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+  .responsive-grid-3 > * {
+    border-right: none !important;
+    border-bottom: 1px solid var(--muted) !important;
+  }
+  .responsive-grid-3 > *:last-child {
+    border-bottom: none !important;
+  }
+
+  .responsive-grid-fire-summary {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Responsive nav ── */
+  .responsive-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .responsive-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .responsive-nav a {
+    padding: 8px 12px !important;
+    font-size: 9px !important;
+  }
+
+  /* ── Header nameplate ── */
+  .app-shell header > div:nth-child(2) {
+    padding: 10px 12px 8px !important;
+  }
+
+  /* ── Funds page layout ── */
+  .funds-layout {
+    flex-direction: column !important;
+  }
+  .funds-basket {
+    width: 100% !important;
+  }
+
+  /* ── Main content padding ── */
+  .main-content {
+    padding: 16px 12px 80px !important;
+  }
+
+  /* ── Chart header responsive ── */
+  .chart-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .chart-indicators {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .responsive-grid-fire-summary {
+    grid-template-columns: 1fr !important;
+  }
+}
