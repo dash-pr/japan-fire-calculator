@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { NISA_FUNDS, NisaFund, SectorWeights } from "@/lib/fireCalculator";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from "recharts";
 
 // ── Sector colour palette (editorial greyscale + accent) ──────────────────────
 const SECTOR_COLORS: Record<keyof SectorWeights, string> = {
@@ -70,6 +71,50 @@ function SectorBar({ weights, showLegend = false }: { weights: SectorWeights; sh
   );
 }
 
+// ── NISA Eligibility Badge ──────────────────────────────────────────────────
+function NisaBadge({ tsumitate, growth }: { tsumitate: boolean; growth: boolean }) {
+  return (
+    <div style={{ display: "flex", gap: 3 }}>
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 8,
+        padding: "2px 5px",
+        fontWeight: 700,
+        background: tsumitate ? "#111111" : "var(--muted)",
+        color: tsumitate ? "#ffffff" : "var(--n400)",
+        border: "1px solid var(--ink)"
+      }}>T</span>
+      <span style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 8,
+        padding: "2px 5px",
+        fontWeight: 700,
+        background: growth ? "#111111" : "var(--muted)",
+        color: growth ? "#ffffff" : "var(--n400)",
+        border: "1px solid var(--ink)"
+      }}>G</span>
+    </div>
+  );
+}
+
+// ── Sparkline Chart (SVG) ────────────────────────────────────────────────────
+function Sparkline({ r1, r3, r5, r10 }: { r1: number; r3: number; r5: number; r10: number }) {
+  const values = [r1, r3, r5, r10];
+  const max = Math.max(...values, 1);
+  const bars = values.map((v, i) => ({
+    x: i * 14,
+    height: Math.max(2, (v / max) * 24),
+  }));
+  return (
+    <svg width={56} height={24} style={{ display: "block", verticalAlign: "middle" }}>
+      {bars.map((b, i) => (
+        <rect key={i} x={b.x + 1} y={24 - b.height} width={10} height={b.height}
+          fill="#111111" opacity={0.5 + i * 0.15} />
+      ))}
+    </svg>
+  );
+}
+
 const tdR: React.CSSProperties = {
   padding: "10px 12px",
   textAlign: "right",
@@ -83,20 +128,34 @@ export default function FundsPage() {
   const [sortKey, setSortKey] = useState<SortKey>("return5y");
   const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
   const [filterCat, setFilterCat] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const [basket, setBasket] = useState<BasketItem[]>([]);
+  const [page, setPage] = useState(0);
+  const [expandedTicker, setExpandedTicker] = useState<string | null>(null);
+
+  const PAGE_SIZE = 10;
 
   const categories = useMemo(() => Array.from(new Set(NISA_FUNDS.map((f) => f.category))), []);
 
-  const sorted = useMemo(() => {
+  const filtered = useMemo(() => {
     return NISA_FUNDS
       .filter((f) => !filterCat || f.category === filterCat)
+      .filter((f) => !search || f.name.toLowerCase().includes(search.toLowerCase()) || f.benchmark.toLowerCase().includes(search.toLowerCase()) || f.ticker.toLowerCase().includes(search.toLowerCase()))
       .slice()
       .sort((a, b) => {
         const av = a[sortKey] as number;
         const bv = b[sortKey] as number;
         return sortDir === "desc" ? bv - av : av - bv;
       });
-  }, [sortKey, sortDir, filterCat]);
+  }, [sortKey, sortDir, filterCat, search]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  // Reset page when filter/search/sort changes
+  useEffect(() => {
+    setPage(0);
+  }, [filterCat, search, sortKey]);
 
   const toggleSort = useCallback((key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -175,7 +234,7 @@ export default function FundsPage() {
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>Fund Encyclopedia & Basket Builder</div>
         </div>
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--n500)", textAlign: "right", lineHeight: 1.6 }}>
-          Returns in JPY · Annualised<br />Historical estimates · Not financial advice
+          {filtered.length} funds · Returns in JPY · Annualised<br />Historical estimates · Not financial advice
         </div>
       </div>
 
@@ -183,6 +242,14 @@ export default function FundsPage() {
 
         {/* ── LEFT: Encyclopedia ── */}
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Search input */}
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search fund name or benchmark..."
+            style={{ width: "100%", marginBottom: 12, padding: "7px 10px", fontFamily: "'JetBrains Mono', monospace", fontSize: 11, border: "1px solid var(--ink)", boxSizing: "border-box" }}
+          />
+
           {/* Category chips */}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
             {[null, ...categories].map((cat) => (
@@ -205,6 +272,8 @@ export default function FundsPage() {
               <thead>
                 <tr style={{ background: "var(--ink)" }}>
                   <th style={{ padding: "8px 12px", textAlign: "left", fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", whiteSpace: "nowrap" }}>Fund</th>
+                  <th style={{ padding: "8px 12px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", whiteSpace: "nowrap" }}>NISA</th>
+                  <th style={{ padding: "8px 12px", textAlign: "center", fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", whiteSpace: "nowrap" }}>Chart</th>
                   <ColHead label="1yr" sk="return1y" />
                   <ColHead label="3yr" sk="return3y" />
                   <ColHead label="5yr ●" sk="return5y" />
@@ -216,43 +285,137 @@ export default function FundsPage() {
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((fund, i) => {
+                {paginated.map((fund, i) => {
                   const inBasket = isInBasket(fund.ticker);
+                  const isExpanded = expandedTicker === fund.ticker;
+                  const chartData = [
+                    { period: "1yr", return: fund.return1y },
+                    { period: "3yr", return: fund.return3y },
+                    { period: "5yr", return: fund.return5y },
+                    { period: "10yr", return: fund.return10y },
+                    { period: "Est.", return: fund.expectedReturn },
+                  ];
                   return (
-                    <tr key={fund.ticker} style={{
-                      borderTop: "1px solid var(--muted)",
-                      background: inBasket ? "#FFF8F8" : i % 2 === 0 ? "var(--paper)" : "var(--n100)",
-                      transition: "background 0.1s",
-                    }}>
-                      <td style={{ padding: "12px 12px 10px", minWidth: 180, maxWidth: 220 }}>
-                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: inBasket ? "var(--accent)" : "var(--n500)", marginBottom: 3 }}>{fund.category}</div>
-                        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, fontWeight: 700, color: "var(--ink)", lineHeight: 1.3, marginBottom: 2 }}>{fund.name}</div>
-                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--n500)" }}>{fund.benchmark}</div>
-                      </td>
-                      <td style={tdR}>{fmt(fund.return1y)}%</td>
-                      <td style={tdR}>{fmt(fund.return3y)}%</td>
-                      <td style={tdR}><ReturnBadge value={fund.return5y} max={maxReturn} /></td>
-                      <td style={tdR}>{fmt(fund.return10y)}%</td>
-                      <td style={{ ...tdR, color: fund.expenseRatio < 0.1 ? "#2a7a2a" : "var(--n700)" }}>{fmt(fund.expenseRatio, 4)}%</td>
-                      <td style={{ ...tdR, fontWeight: 700, color: "var(--ink)" }}>{fmt(fund.expectedReturn)}%</td>
-                      <td style={{ padding: "10px 12px", minWidth: 120 }}><SectorBar weights={fund.sectorWeights} /></td>
-                      <td style={{ padding: "10px 10px", textAlign: "center" }}>
-                        <button onClick={() => inBasket ? removeFromBasket(fund.ticker) : addToBasket(fund)} style={{
-                          padding: "5px 10px", fontFamily: "'JetBrains Mono', monospace", fontSize: 9,
-                          fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer",
-                          border: inBasket ? "1px solid var(--accent)" : "1px solid var(--ink)",
-                          background: inBasket ? "#FFF0F0" : "transparent",
-                          color: inBasket ? "var(--accent)" : "var(--ink)",
-                          transition: "all 0.12s", whiteSpace: "nowrap",
-                        }}>
-                          {inBasket ? "✕ Remove" : "+ Basket"}
-                        </button>
-                      </td>
-                    </tr>
+                    <React.Fragment key={fund.ticker}>
+                      <tr style={{
+                        borderTop: "1px solid var(--muted)",
+                        background: inBasket ? "#FFF8F8" : i % 2 === 0 ? "var(--paper)" : "var(--n100)",
+                        transition: "background 0.1s",
+                        cursor: "pointer",
+                      }} onClick={() => setExpandedTicker(isExpanded ? null : fund.ticker)}>
+                        <td style={{ padding: "12px 12px 10px", minWidth: 180, maxWidth: 220 }}>
+                          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: inBasket ? "var(--accent)" : "var(--n500)", marginBottom: 3 }}>{fund.category}</div>
+                          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, fontWeight: 700, color: "var(--ink)", lineHeight: 1.3, marginBottom: 2 }}>{fund.name}</div>
+                          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--n500)" }}>{fund.ticker}</div>
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "center" }}>
+                          <NisaBadge tsumitate={fund.nisaTsumitateEligible} growth={fund.nisaGrowthEligible} />
+                        </td>
+                        <td style={{ padding: "10px 12px", textAlign: "center" }}>
+                          <Sparkline r1={fund.return1y} r3={fund.return3y} r5={fund.return5y} r10={fund.return10y} />
+                        </td>
+                        <td style={tdR}>{fmt(fund.return1y)}%</td>
+                        <td style={tdR}>{fmt(fund.return3y)}%</td>
+                        <td style={tdR}><ReturnBadge value={fund.return5y} max={maxReturn} /></td>
+                        <td style={tdR}>{fmt(fund.return10y)}%</td>
+                        <td style={{ ...tdR, color: fund.expenseRatio < 0.1 ? "#2a7a2a" : "var(--n700)" }}>{fmt(fund.expenseRatio, 4)}%</td>
+                        <td style={{ ...tdR, fontWeight: 700, color: "var(--ink)" }}>{fmt(fund.expectedReturn)}%</td>
+                        <td style={{ padding: "10px 12px", minWidth: 120 }}><SectorBar weights={fund.sectorWeights} /></td>
+                        <td style={{ padding: "10px 10px", textAlign: "center" }}>
+                          <button onClick={(e) => { e.stopPropagation(); inBasket ? removeFromBasket(fund.ticker) : addToBasket(fund); }} style={{
+                            padding: "5px 10px", fontFamily: "'JetBrains Mono', monospace", fontSize: 9,
+                            fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer",
+                            border: inBasket ? "1px solid var(--accent)" : "1px solid var(--ink)",
+                            background: inBasket ? "#FFF0F0" : "transparent",
+                            color: inBasket ? "var(--accent)" : "var(--ink)",
+                            transition: "all 0.12s", whiteSpace: "nowrap",
+                          }}>
+                            {inBasket ? "✕ Remove" : "+ Basket"}
+                          </button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr style={{ borderTop: "1px solid var(--muted)", background: "var(--n100)" }}>
+                          <td colSpan={10} style={{ padding: "16px 12px" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                              {/* Left: Description and details */}
+                              <div>
+                                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 8 }}>About This Fund</div>
+                                <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 12, fontStyle: "italic", color: "var(--n600)", lineHeight: 1.6, marginBottom: 12 }}>
+                                  {fund.description}
+                                </p>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
+                                  <div>
+                                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 4 }}>Benchmark</div>
+                                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{fund.benchmark}</div>
+                                  </div>
+                                  <div>
+                                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 4 }}>Expense Ratio</div>
+                                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, fontWeight: 700, color: fund.expenseRatio < 0.1 ? "#2a7a2a" : "var(--ink)" }}>{fmt(fund.expenseRatio, 4)}%</div>
+                                  </div>
+                                </div>
+                                <div style={{ marginTop: 12, padding: "10px 12px", background: "var(--paper)", border: "1px solid var(--muted)" }}>
+                                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 6 }}>NISA Eligibility</div>
+                                  <div style={{ display: "flex", gap: 12 }}>
+                                    <div>
+                                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, color: fund.nisaTsumitateEligible ? "#2a7a2a" : "var(--accent)" }}>
+                                        {fund.nisaTsumitateEligible ? "✓ Tsumitate" : "✗ Tsumitate"}
+                                      </div>
+                                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: "var(--n500)", marginTop: 2 }}>積立投資枠</div>
+                                    </div>
+                                    <div>
+                                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, color: fund.nisaGrowthEligible ? "#2a7a2a" : "var(--accent)" }}>
+                                        {fund.nisaGrowthEligible ? "✓ Growth" : "✗ Growth"}
+                                      </div>
+                                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, color: "var(--n500)", marginTop: 2 }}>成長投資枠</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              {/* Right: Chart */}
+                              <div>
+                                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 8 }}>Return History</div>
+                                <ResponsiveContainer width="100%" height={140}>
+                                  <BarChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
+                                    <XAxis dataKey="period" fontSize={9} fontFamily="JetBrains Mono" />
+                                    <YAxis fontSize={9} fontFamily="JetBrains Mono" unit="%" width={32} />
+                                    <Tooltip formatter={(v) => `${fmt(v as number)}%`} contentStyle={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10 }} />
+                                    <Bar dataKey="return" radius={[1, 1, 0, 0]}>
+                                      {chartData.map((_, idx) => (
+                                        <Cell key={idx} fill={idx < 4 ? "#4a4a4a" : "var(--accent)"} />
+                                      ))}
+                                    </Bar>
+                                  </BarChart>
+                                </ResponsiveContainer>
+                                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--n600)", marginTop: 8, textAlign: "center" }}>
+                                  Gray = historical, Red = estimated
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderTop: "1px solid var(--ink)", background: "var(--paper)", fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }}>
+            <span style={{ color: "var(--n500)" }}>
+              {filtered.length === 0 ? "No funds" : `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
+            </span>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} style={{ padding: "4px 8px", cursor: page === 0 ? "default" : "pointer", opacity: page === 0 ? 0.5 : 1, border: "1px solid var(--ink)" }}>←</button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button key={i} onClick={() => setPage(i)} style={{ padding: "4px 8px", fontWeight: page === i ? 700 : 400, cursor: "pointer", border: "1px solid var(--ink)", background: page === i ? "var(--ink)" : "transparent", color: page === i ? "var(--paper)" : "var(--ink)" }}>
+                  {i + 1}
+                </button>
+              ))}
+              <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} style={{ padding: "4px 8px", cursor: page >= totalPages - 1 ? "default" : "pointer", opacity: page >= totalPages - 1 ? 0.5 : 1, border: "1px solid var(--ink)" }}>→</button>
+            </div>
           </div>
 
           {/* Sector legend */}

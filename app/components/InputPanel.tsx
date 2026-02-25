@@ -503,25 +503,6 @@ export default function InputPanel({
                 onChange={(v) => onAccounts({ ...accounts, nisaEnabled: v })}
             />
             <Toggle
-                label="Junior NISA (existing balance)"
-                checked={accounts.juniorNisaEnabled}
-                onChange={(v) => onAccounts({ ...accounts, juniorNisaEnabled: v })}
-            />
-            {/* Junior NISA balance input */}
-            {accounts.juniorNisaEnabled && (
-                <div style={{ marginBottom: 10, marginTop: -4, paddingLeft: 2 }}>
-                    <Field label="Junior NISA Balance (today)">
-                        <NumberInput
-                            value={juniorNisaBalance}
-                            onChange={onJuniorNisaBalance}
-                            step={100000}
-                            prefix="¥"
-                            min={0}
-                        />
-                    </Field>
-                </div>
-            )}
-            <Toggle
                 label="Taxable Brokerage"
                 checked={accounts.taxableEnabled}
                 onChange={(v) => onAccounts({ ...accounts, taxableEnabled: v })}

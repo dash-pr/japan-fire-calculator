@@ -161,18 +161,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             >
               ■ Live
             </div>
-            <span
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 10,
-                color: "var(--n500)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                textAlign: "right",
-              }}
-            >
-              Age {currentAge} → 90 projection
-            </span>
           </div>
         </div>
       </header>
