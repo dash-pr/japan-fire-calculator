@@ -303,13 +303,12 @@ export function runSimulation(input: SimulationInput): SimulationResult {
 
     // Expenses for this month (use postFire amount during retirement)
     // Accounts for both inflation and lifestyle inflation during retirement
-    // Also includes any ongoing loan payments during retirement
+    // Loan payments are tracked separately (not included here)
     // Reduced by pension income (net expenses after pension)
     const baseExpense = isFired
       ? Math.max(0, postFireMonthlyExpenses
           * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12 + (m - Math.round((targetFireAge - currentAge) * 12)))
           * Math.pow(1 + monthlyLifestyleInflation, m - Math.round((targetFireAge - currentAge) * 12))
-          + loanPayment
           - pensionMonthlyNow)
       : currentMonthlyExpenses;
 
