@@ -565,7 +565,7 @@ export default function CashFlowPage() {
           }}
         >
           <table
-            style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}
+            style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}
           >
             <thead>
               <tr
@@ -585,7 +585,7 @@ export default function CashFlowPage() {
                       fontWeight: 700,
                       color: "rgba(255,255,255,0.5)",
                       letterSpacing: "0.12em",
-                      fontSize: 8.5,
+                      fontSize: 9,
                       textTransform: "uppercase",
                       whiteSpace: "nowrap",
                       fontFamily: "'JetBrains Mono', monospace",
@@ -717,11 +717,11 @@ export default function CashFlowPage() {
 }
 
 const tdStyle: React.CSSProperties = {
-  padding: "7px 12px",
+  padding: "8px 14px",
   textAlign: "right",
   color: "var(--n600)",
   whiteSpace: "nowrap",
   fontFamily: "'JetBrains Mono', monospace",
-  fontSize: 11,
+  fontSize: 12,
   borderTop: "1px solid var(--muted)",
 };
