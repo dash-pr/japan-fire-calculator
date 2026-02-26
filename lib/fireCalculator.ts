@@ -118,7 +118,7 @@ const NISA_GROWTH_LIFETIME   = 12_000_000;  // ¥12M lifetime
 // modelled as a lump-sum already held at simulation start / FIRE date
 
 // ── Tax rates ─────────────────────────────────────────────────────────────────
-const INCOME_TAX_EFFECTIVE   = 0.20;
+export const INCOME_TAX_EFFECTIVE   = 0.20;
 const CAPITAL_GAINS_TAX      = 0.20315;
 const IDECO_WITHDRAWAL_TAX   = 0.10;  // simplified (退職所得控除 benefit)
 

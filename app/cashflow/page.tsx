@@ -13,7 +13,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useSimulator } from "@/app/context/SimulatorContext";
-import { formatYen } from "@/lib/fireCalculator";
+import { formatYen, INCOME_TAX_EFFECTIVE } from "@/lib/fireCalculator";
 
 // ── Colour palette ────────────────────────────────────────────────────────────
 const C = {
@@ -114,9 +114,12 @@ export default function CashFlowPage() {
       allRows
         .filter((s) => s.age < targetFireAge)
         .map((s) => {
-          const invested =
-            s.idecoCont + s.nisaTsumCont + s.nisaGrowthCont + s.taxableCont;
-          const surplus = Math.max(0, s.grossIncome - s.monthlyExpenses - s.loanPayment - invested);
+          // iDeCo is tax-deductible, so actual cost = idecoCont × (1 - tax rate)
+          const idecoActualCost = s.idecoCont * (1 - INCOME_TAX_EFFECTIVE);
+          const surplus = Math.max(
+            0,
+            s.grossIncome - s.monthlyExpenses - s.loanPayment - idecoActualCost - s.nisaTsumCont - s.nisaGrowthCont - s.taxableCont
+          );
           return {
             year: String(s.year),
             age: s.age,
@@ -515,14 +518,11 @@ export default function CashFlowPage() {
             <tbody>
               {allRows.map((s) => {
                 const isRetired = s.age >= targetFireAge;
-                const invested =
-                  s.idecoCont +
-                  s.nisaTsumCont +
-                  s.nisaGrowthCont +
-                  s.taxableCont;
+                // iDeCo is tax-deductible, so actual cost = idecoCont × (1 - tax rate)
+                const idecoActualCost = s.idecoCont * (1 - INCOME_TAX_EFFECTIVE);
                 const netDelta = isRetired
                   ? s.swpWithdrawal + s.postFireSideIncome - s.monthlyExpenses - s.loanPayment
-                  : s.grossIncome - s.monthlyExpenses - s.loanPayment - invested;
+                  : s.grossIncome - s.monthlyExpenses - s.loanPayment - idecoActualCost - s.nisaTsumCont - s.nisaGrowthCont - s.taxableCont;
 
                 return (
                   <tr
