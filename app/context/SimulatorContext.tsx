@@ -26,7 +26,8 @@ const DEFAULT_INPUT: SimulationInput = {
   loans: [],
   accounts: {
     idecoEnabled: true,
-    nisaEnabled: true,
+    nisaTsumitateEnabled: true,
+    nisaGrowthEnabled: true,
     taxableEnabled: true,
     juniorNisaEnabled: false,
   },
@@ -178,6 +179,28 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     "fire-accounts",
     DEFAULT_INPUT.accounts
   );
+
+  // Migrate old nisaEnabled to new separate NISA toggles
+  useEffect(() => {
+    const oldNisaEnabled = localStorage.getItem("fire-nisaEnabled");
+    if (oldNisaEnabled !== null && !localStorage.getItem("fire-nisaTsumitateEnabled")) {
+      try {
+        const enabled = JSON.parse(oldNisaEnabled);
+        // Create new accounts object with separate toggles
+        const newAccounts = {
+          ...accounts,
+          nisaTsumitateEnabled: enabled,
+          nisaGrowthEnabled: enabled,
+        };
+        setAccounts(newAccounts);
+        // Clean up old key
+        localStorage.removeItem("fire-nisaEnabled");
+      } catch (e) {
+        console.warn("Failed to migrate nisaEnabled:", e);
+      }
+    }
+  }, []);
+
   const [idecoType, setIdecoType] = useLocalStorage<IDeCoType>(
     "fire-idecoType",
     DEFAULT_INPUT.idecoType

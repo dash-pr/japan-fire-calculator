@@ -527,9 +527,14 @@ export default function InputPanel({
                 </div>
             )}
             <Toggle
-                label="NISA — Tsumitate ¥6M + Growth ¥12M"
-                checked={accounts.nisaEnabled}
-                onChange={(v) => onAccounts({ ...accounts, nisaEnabled: v })}
+                label="NISA Tsumitate — ¥6M lifetime (¥100k/mo)"
+                checked={accounts.nisaTsumitateEnabled}
+                onChange={(v) => onAccounts({ ...accounts, nisaTsumitateEnabled: v })}
+            />
+            <Toggle
+                label="NISA Growth — ¥12M lifetime (¥200k/mo)"
+                checked={accounts.nisaGrowthEnabled}
+                onChange={(v) => onAccounts({ ...accounts, nisaGrowthEnabled: v })}
             />
             <Toggle
                 label="Taxable Brokerage"

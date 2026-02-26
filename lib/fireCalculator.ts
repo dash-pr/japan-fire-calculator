@@ -24,9 +24,12 @@ export interface Loan {
 
 export interface AccountToggles {
   idecoEnabled: boolean;
-  nisaEnabled: boolean;
+  nisaTsumitateEnabled: boolean;  // NEW: separate toggle for tsumitate
+  nisaGrowthEnabled: boolean;     // NEW: separate toggle for growth
   taxableEnabled: boolean;
   juniorNisaEnabled: boolean;
+  // DEPRECATED: nisaEnabled (kept for backwards compat, auto-derived)
+  nisaEnabled?: boolean;
 }
 
 export type IDeCoType = 'freelancer' | 'employee';
@@ -299,48 +302,46 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       }
 
       // NISA — tsumitate slot first, then growth
-      if (accounts.nisaEnabled) {
-        if (monthInYear === 1) { nisaTsumitateAnnualUsed = 0; nisaGrowthAnnualUsed = 0; }
+      if (monthInYear === 1) { nisaTsumitateAnnualUsed = 0; nisaGrowthAnnualUsed = 0; }
 
-        // Tsumitate
-        if (nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME) {
-          const space = Math.min(
-            NISA_TSUMITATE_ANNUAL  - nisaTsumitateAnnualUsed,
-            NISA_TSUMITATE_LIFETIME - nisaTsumitateLifetimeUsed,
-            Math.max(0, remainingSavings)
-          );
-          if (space > 0) {
-            nisaTsumitate              += space;
-            nisaTsumitateAnnualUsed    += space;
-            nisaTsumitateLifetimeUsed  += space;
-            totalNisaTsumitateContributed_ += space;
-            remainingSavings           -= space;
+      // Tsumitate (if enabled)
+      if (accounts.nisaTsumitateEnabled && nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME) {
+        const space = Math.min(
+          NISA_TSUMITATE_ANNUAL  - nisaTsumitateAnnualUsed,
+          NISA_TSUMITATE_LIFETIME - nisaTsumitateLifetimeUsed,
+          Math.max(0, remainingSavings)
+        );
+        if (space > 0) {
+          nisaTsumitate              += space;
+          nisaTsumitateAnnualUsed    += space;
+          nisaTsumitateLifetimeUsed  += space;
+          totalNisaTsumitateContributed_ += space;
+          remainingSavings           -= space;
 
-            if (nisaTsumitateLifetimeUsed >= NISA_TSUMITATE_LIFETIME && !nisaTsumitateExhaustionYear) {
-              nisaTsumitateExhaustionYear = year;
-              nisaTsumitateExhaustionAge  = Math.round(ageDecimal);
-            }
+          if (nisaTsumitateLifetimeUsed >= NISA_TSUMITATE_LIFETIME && !nisaTsumitateExhaustionYear) {
+            nisaTsumitateExhaustionYear = year;
+            nisaTsumitateExhaustionAge  = Math.round(ageDecimal);
           }
         }
+      }
 
-        // Growth slot
-        if (nisaGrowthLifetimeUsed < NISA_GROWTH_LIFETIME && remainingSavings > 0) {
-          const space = Math.min(
-            NISA_GROWTH_ANNUAL  - nisaGrowthAnnualUsed,
-            NISA_GROWTH_LIFETIME - nisaGrowthLifetimeUsed,
-            Math.max(0, remainingSavings)
-          );
-          if (space > 0) {
-            nisaGrowth              += space;
-            nisaGrowthAnnualUsed    += space;
-            nisaGrowthLifetimeUsed  += space;
-            totalNisaGrowthContributed_ += space;
-            remainingSavings        -= space;
+      // Growth slot (if enabled)
+      if (accounts.nisaGrowthEnabled && nisaGrowthLifetimeUsed < NISA_GROWTH_LIFETIME && remainingSavings > 0) {
+        const space = Math.min(
+          NISA_GROWTH_ANNUAL  - nisaGrowthAnnualUsed,
+          NISA_GROWTH_LIFETIME - nisaGrowthLifetimeUsed,
+          Math.max(0, remainingSavings)
+        );
+        if (space > 0) {
+          nisaGrowth              += space;
+          nisaGrowthAnnualUsed    += space;
+          nisaGrowthLifetimeUsed  += space;
+          totalNisaGrowthContributed_ += space;
+          remainingSavings        -= space;
 
-            if (nisaGrowthLifetimeUsed >= NISA_GROWTH_LIFETIME && !nisaGrowthExhaustionYear) {
-              nisaGrowthExhaustionYear = year;
-              nisaGrowthExhaustionAge  = Math.round(ageDecimal);
-            }
+          if (nisaGrowthLifetimeUsed >= NISA_GROWTH_LIFETIME && !nisaGrowthExhaustionYear) {
+            nisaGrowthExhaustionYear = year;
+            nisaGrowthExhaustionAge  = Math.round(ageDecimal);
           }
         }
       }
@@ -472,11 +473,11 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     const disposableForContrib = !isFired
       ? Math.max(0, monthlyIncome - currentMonthlyExpenses - idecoCont_ + (idecoCont_ * INCOME_TAX_EFFECTIVE) - loanPayment)
       : 0;
-    const nisaTsumCont_  = !isFired && accounts.nisaEnabled
+    const nisaTsumCont_  = !isFired && accounts.nisaTsumitateEnabled
       ? Math.min(nisaTsumMonthlyMax, nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME ? Math.max(0, disposableForContrib) : 0, disposableForContrib)
       : 0;
     const leftAfterNisaT = Math.max(0, disposableForContrib - nisaTsumCont_);
-    const nisaGrowCont_  = !isFired && accounts.nisaEnabled
+    const nisaGrowCont_  = !isFired && accounts.nisaGrowthEnabled
       ? Math.min(nisaGrowthMonthlyMax, leftAfterNisaT)
       : 0;
     const leftAfterNisa  = Math.max(0, leftAfterNisaT - nisaGrowCont_);
