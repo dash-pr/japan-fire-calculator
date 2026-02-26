@@ -50,10 +50,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setSwpDepletionAge,
     postFireMonthlyIncome,
     setPostFireMonthlyIncome,
+    postFireIncomeEndAge,
+    setPostFireIncomeEndAge,
     lifestyleInflation,
     setLifestyleInflation,
     postFatfireMonthlyIncome,
     setPostFatfireMonthlyIncome,
+    postFatfireIncomeEndAge,
+    setPostFatfireIncomeEndAge,
     initialIdecoBalance,
     setInitialIdecoBalance,
     initialNisaTsumitateBalance,
@@ -318,10 +322,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onSwpDepletionAge={setSwpDepletionAge}
               postFireMonthlyIncome={postFireMonthlyIncome}
               onPostFireMonthlyIncome={setPostFireMonthlyIncome}
+              postFireIncomeEndAge={postFireIncomeEndAge}
+              onPostFireIncomeEndAge={setPostFireIncomeEndAge}
               lifestyleInflation={lifestyleInflation}
               onLifestyleInflation={setLifestyleInflation}
               postFatfireMonthlyIncome={postFatfireMonthlyIncome}
               onPostFatfireMonthlyIncome={setPostFatfireMonthlyIncome}
+              postFatfireIncomeEndAge={postFatfireIncomeEndAge}
+              onPostFatfireIncomeEndAge={setPostFatfireIncomeEndAge}
               pensionEnabled={pensionEnabled}
               onPensionEnabled={setPensionEnabled}
               pensionStartAge={pensionStartAge}

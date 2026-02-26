@@ -41,8 +41,10 @@ export interface SimulationInput {
   monthlyExpenses: number;        // yen/month (working phase)
   postFireMonthlyExpenses: number;// yen/month (retirement phase, today's money)
   postFireMonthlyIncome?: number; // yen/month side income during retirement (today's money)
+  postFireIncomeEndAge?: number;  // age when post-FIRE side income ends (typically FATFIRE age)
   lifestyleInflation: number;     // % per year — additional growth in post-fire expenses
   postFatfireMonthlyIncome?: number; // yen/month additional side income after FATFIRE is achieved
+  postFatfireIncomeEndAge?: number; // age when post-FATFIRE side income ends (default 90)
   salaryIncreaseRate: number;     // % per year  e.g. 3
   annualInflation: number;        // % per year  e.g. 2
   loans: Loan[];
@@ -152,8 +154,10 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     monthlyExpenses,
     postFireMonthlyExpenses,
     postFireMonthlyIncome = 0,
+    postFireIncomeEndAge,
     lifestyleInflation = 0,
     postFatfireMonthlyIncome = 0,
+    postFatfireIncomeEndAge = LIFE_EXPECTANCY,
     salaryIncreaseRate,
     annualInflation,
     loans,
@@ -503,12 +507,14 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     const taxableCont_   = !isFired && accounts.taxableEnabled ? leftAfterNisa : 0;
 
     // Post-FIRE side income (inflation-adjusted to current month)
-    const postFireSideIncomeNow = isFired
+    // Ends when FATFIRE is reached (or at postFireIncomeEndAge if specified)
+    const endAgeForPostFire = postFireIncomeEndAge ?? (fatFireYear ? Math.floor(currentAge + (fatFireYear - startYear)) : LIFE_EXPECTANCY);
+    const postFireSideIncomeNow = isFired && ageDecimal < endAgeForPostFire
       ? postFireMonthlyIncome * Math.pow(1 + monthlyInflation, m)
       : 0;
 
     // Post-FATFIRE side income (kicks in when portfolio >= fatFireCapital)
-    const postFatfireSideIncomeNow = isFired && tot >= fatFireCapital && postFatfireMonthlyIncome > 0
+    const postFatfireSideIncomeNow = isFired && tot >= fatFireCapital && ageDecimal < postFatfireIncomeEndAge && postFatfireMonthlyIncome > 0
       ? postFatfireMonthlyIncome * Math.pow(1 + monthlyInflation, m)
       : 0;
 

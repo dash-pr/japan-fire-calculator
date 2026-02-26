@@ -19,8 +19,10 @@ const DEFAULT_INPUT: SimulationInput = {
   monthlyExpenses: 250_000,
   postFireMonthlyExpenses: 200_000,
   postFireMonthlyIncome: 0,
+  postFireIncomeEndAge: undefined,
   lifestyleInflation: 0,
   postFatfireMonthlyIncome: 0,
+  postFatfireIncomeEndAge: 90,
   salaryIncreaseRate: 3,
   annualInflation: 2,
   loans: [],
@@ -100,10 +102,14 @@ export interface SimulatorContextValue {
   setPostFireMonthlyExpenses: (v: number) => void;
   postFireMonthlyIncome: number;
   setPostFireMonthlyIncome: (v: number) => void;
+  postFireIncomeEndAge: number;
+  setPostFireIncomeEndAge: (v: number) => void;
   lifestyleInflation: number;
   setLifestyleInflation: (v: number) => void;
   postFatfireMonthlyIncome: number;
   setPostFatfireMonthlyIncome: (v: number) => void;
+  postFatfireIncomeEndAge: number;
+  setPostFatfireIncomeEndAge: (v: number) => void;
   salaryIncreaseRate: number;
   setSalaryIncreaseRate: (v: number) => void;
   annualInflation: number;
@@ -171,6 +177,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     "fire-postFireMonthlyIncome",
     DEFAULT_INPUT.postFireMonthlyIncome ?? 0
   );
+  const [postFireIncomeEndAge, setPostFireIncomeEndAge] = useLocalStorage(
+    "fire-postFireIncomeEndAge",
+    DEFAULT_INPUT.postFireIncomeEndAge ?? 65
+  );
   const [lifestyleInflation, setLifestyleInflation] = useLocalStorage(
     "fire-lifestyleInflation",
     DEFAULT_INPUT.lifestyleInflation
@@ -178,6 +188,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
   const [postFatfireMonthlyIncome, setPostFatfireMonthlyIncome] = useLocalStorage(
     "fire-postFatfireMonthlyIncome",
     DEFAULT_INPUT.postFatfireMonthlyIncome ?? 0
+  );
+  const [postFatfireIncomeEndAge, setPostFatfireIncomeEndAge] = useLocalStorage(
+    "fire-postFatfireIncomeEndAge",
+    DEFAULT_INPUT.postFatfireIncomeEndAge ?? 90
   );
   const [salaryIncreaseRate, setSalaryIncreaseRate] = useLocalStorage(
     "fire-salaryIncreaseRate",
@@ -273,8 +287,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     monthlyExpenses,
     postFireMonthlyExpenses,
     postFireMonthlyIncome,
+    postFireIncomeEndAge,
     lifestyleInflation,
     postFatfireMonthlyIncome,
+    postFatfireIncomeEndAge,
     salaryIncreaseRate,
     annualInflation,
     loans,
@@ -325,8 +341,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         monthlyExpenses, setMonthlyExpenses,
         postFireMonthlyExpenses, setPostFireMonthlyExpenses,
         postFireMonthlyIncome, setPostFireMonthlyIncome,
+        postFireIncomeEndAge, setPostFireIncomeEndAge,
         lifestyleInflation, setLifestyleInflation,
         postFatfireMonthlyIncome, setPostFatfireMonthlyIncome,
+        postFatfireIncomeEndAge, setPostFatfireIncomeEndAge,
         salaryIncreaseRate, setSalaryIncreaseRate,
         annualInflation, setAnnualInflation,
         accounts, setAccounts,

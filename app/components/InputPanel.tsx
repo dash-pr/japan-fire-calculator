@@ -38,10 +38,14 @@ interface Props {
     // Advanced
     postFireMonthlyIncome: number;
     onPostFireMonthlyIncome: (v: number) => void;
+    postFireIncomeEndAge: number;
+    onPostFireIncomeEndAge: (v: number) => void;
     lifestyleInflation: number;
     onLifestyleInflation: (v: number) => void;
     postFatfireMonthlyIncome: number;
     onPostFatfireMonthlyIncome: (v: number) => void;
+    postFatfireIncomeEndAge: number;
+    onPostFatfireIncomeEndAge: (v: number) => void;
     pensionEnabled: boolean;
     onPensionEnabled: (v: boolean) => void;
     pensionStartAge: number;
@@ -369,10 +373,14 @@ export default function InputPanel({
     onSwpDepletionAge,
     postFireMonthlyIncome,
     onPostFireMonthlyIncome,
+    postFireIncomeEndAge,
+    onPostFireIncomeEndAge,
     lifestyleInflation,
     onLifestyleInflation,
     postFatfireMonthlyIncome,
     onPostFatfireMonthlyIncome,
+    postFatfireIncomeEndAge,
+    onPostFatfireIncomeEndAge,
     pensionEnabled,
     onPensionEnabled,
     pensionStartAge,
@@ -667,12 +675,24 @@ export default function InputPanel({
                         )}
                     </div>
 
-                    <Field
-                        label="Post-FIRE Side Income / mo"
-                        info="Monthly income during retirement (part-time, rental, etc.). In today's yen."
-                    >
-                        <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
-                    </Field>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                        <div>
+                            <Field
+                                label="Post-FIRE Side Income / mo"
+                                info="Monthly income during retirement (part-time, rental, etc.). In today's yen."
+                            >
+                                <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
+                            </Field>
+                        </div>
+                        <div>
+                            <Field
+                                label="Ends at Age"
+                                info="When this income stops (typically when FATFIRE is reached). Automatically syncs with FATFIRE milestone."
+                            >
+                                <NumberInput value={postFireIncomeEndAge} onChange={onPostFireIncomeEndAge} step={1} min={0} max={90} />
+                            </Field>
+                        </div>
+                    </div>
                     <SliderField
                         label="Lifestyle Inflation / yr"
                         value={lifestyleInflation}
@@ -683,12 +703,24 @@ export default function InputPanel({
                         format={fmtPct}
                         info="Annual increase in post-fire expenses beyond inflation. E.g., traveling more as you retire."
                     />
-                    <Field
-                        label="Post-FATFIRE Side Income / mo"
-                        info="Additional monthly income that kicks in after you reach Fat FIRE. In today's yen."
-                    >
-                        <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
-                    </Field>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                        <div>
+                            <Field
+                                label="Post-FATFIRE Side Income / mo"
+                                info="Additional monthly income that kicks in after you reach Fat FIRE. In today's yen."
+                            >
+                                <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
+                            </Field>
+                        </div>
+                        <div>
+                            <Field
+                                label="Ends at Age"
+                                info="When this income stops. Default: 90 (life expectancy)."
+                            >
+                                <NumberInput value={postFatfireIncomeEndAge} onChange={onPostFatfireIncomeEndAge} step={1} min={0} max={120} />
+                            </Field>
+                        </div>
+                    </div>
                 </div>
             )}
 
