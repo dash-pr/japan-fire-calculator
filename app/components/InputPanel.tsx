@@ -59,12 +59,25 @@ interface Props {
 /* ─── Info tooltip ──────────────────────────────────────────────────────────────────────────── */
 function InfoTooltip({ text }: { text: string }) {
     const [show, setShow] = useState(false);
+    const [pos, setPos] = useState({ x: 0, y: 0 });
     const _ref = useRef<HTMLSpanElement>(null);
+
+    const handleMouseEnter = () => {
+        if (_ref.current) {
+            const rect = _ref.current.getBoundingClientRect();
+            setPos({
+                x: rect.right + 7,
+                y: rect.top + rect.height / 2,
+            });
+        }
+        setShow(true);
+    };
+
     return (
         <span
             ref={_ref}
-            style={{ position: "relative", display: "inline-flex", alignItems: "center", marginLeft: 5, cursor: "help", verticalAlign: "middle" }}
-            onMouseEnter={() => setShow(true)}
+            style={{ display: "inline-flex", alignItems: "center", marginLeft: 5, cursor: "help", verticalAlign: "middle" }}
+            onMouseEnter={handleMouseEnter}
             onMouseLeave={() => setShow(false)}
         >
             <span style={{
@@ -76,10 +89,10 @@ function InfoTooltip({ text }: { text: string }) {
             }}>i</span>
             {show && (
                 <div style={{
-                    position: "absolute", left: "100%", top: "50%", transform: "translateY(-50%)",
-                    marginLeft: 7, background: "#1c1c1c",
+                    position: "fixed", left: pos.x, top: pos.y, transform: "translateY(-50%)",
+                    background: "#1c1c1c",
                     border: "1px solid rgba(255,255,255,0.14)",
-                    padding: "8px 11px", width: 190, zIndex: 200, pointerEvents: "none",
+                    padding: "8px 11px", width: 190, zIndex: 9999, pointerEvents: "none",
                     boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
                 }}>
                     <span style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 10.5, color: "rgba(255,255,255,0.72)", lineHeight: 1.55, display: "block" }}>
@@ -709,11 +722,11 @@ export default function InputPanel({
                     </div>
                 </div>
                 <div>
-                    <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Term (months)</label>
+                    <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Term (years)</label>
                     <NumberInput
-                        value={newLoan.remainingMonths}
-                        onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: v }))}
-                        min={1} max={600} step={12} suffix=" months"
+                        value={newLoan.remainingMonths / 12}
+                        onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: Math.round(v * 12) }))}
+                        min={1} max={50} step={1} suffix=" years"
                     />
                 </div>
                 <button
