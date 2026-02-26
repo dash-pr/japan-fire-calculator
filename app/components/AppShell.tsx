@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSimulator } from "@/app/context/SimulatorContext";
 import InputPanel from "./InputPanel";
+import ErrorBanner from "./ErrorBanner";
 
 // ── Nav sections ──────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
@@ -61,6 +62,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setInitialNisaGrowthBalance,
     initialTaxableBalance,
     setInitialTaxableBalance,
+    validationErrors,
+    simulationError,
   } = useSimulator();
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -337,6 +340,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           }}
           className="main-content"
         >
+          <ErrorBanner
+            validationErrors={validationErrors}
+            simulationError={simulationError}
+          />
           {children}
 
           {/* Footer */}

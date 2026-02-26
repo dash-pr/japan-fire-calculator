@@ -141,7 +141,7 @@ export default function FundsPage() {
   const [page, setPage] = useState(0);
   const [expandedTicker, setExpandedTicker] = useState<string | null>(null);
   const [liveReturns, setLiveReturns] = useState<Record<string, ReturnData> | null>(null);
-  const [dataStatus, setDataStatus] = useState<"loading" | "live" | "fallback">("loading");
+  const [dataStatus, setDataStatus] = useState<"loading" | "live" | "fallback" | "stale">("loading");
 
   const PAGE_SIZE = 10;
 
@@ -149,9 +149,16 @@ export default function FundsPage() {
   useEffect(() => {
     fetch("/api/fund-returns")
       .then((res) => res.json())
-      .then((data) => {
-        setLiveReturns(data);
-        setDataStatus("live");
+      .then((apiResponse) => {
+        // Handle new API response structure with meta data
+        if (apiResponse.data && apiResponse.meta) {
+          setLiveReturns(apiResponse.data);
+          setDataStatus(apiResponse.meta.isStale ? "stale" : "live");
+        } else {
+          // Fallback for old response format
+          setLiveReturns(apiResponse);
+          setDataStatus("live");
+        }
       })
       .catch(() => {
         setDataStatus("fallback");
@@ -268,8 +275,8 @@ export default function FundsPage() {
         </div>
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--n500)", textAlign: "right", lineHeight: 1.6 }}>
           {filtered.length} funds · Returns in JPY · Annualised<br />
-          <span style={{ color: dataStatus === "live" ? "#2a7a2a" : "var(--n500)" }}>
-            {dataStatus === "loading" ? "Fetching live data..." : dataStatus === "live" ? "● Live · Yahoo Finance" : "● Estimates"}
+          <span style={{ color: dataStatus === "live" ? "#2a7a2a" : dataStatus === "stale" ? "#C88B2A" : "var(--n500)" }}>
+            {dataStatus === "loading" ? "Fetching live data..." : dataStatus === "live" ? "● Live · Yahoo Finance" : dataStatus === "stale" ? "⚠ Cached data" : "● Estimates"}
           </span>
         </div>
       </div>

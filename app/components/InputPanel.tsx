@@ -118,7 +118,7 @@ function SliderField({
 
     const commit = (raw: string) => {
         const n = parseFloat(raw);
-        if (!isNaN(n)) onChange(Math.min(max, Math.max(min, n)));
+        if (!isNaN(n) && raw.trim() !== "") onChange(Math.min(max, Math.max(min, n)));
         setEditing(false);
     };
 
@@ -134,14 +134,14 @@ function SliderField({
                 </label>
                 {editing ? (
                     <input
-                        type="number" autoFocus value={draft}
-                        min={min} max={max} step={step}
+                        type="text" inputMode="decimal" autoFocus value={draft}
                         onChange={(e) => setDraft(e.target.value)}
                         onBlur={(e) => commit(e.currentTarget.value)}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") e.currentTarget.blur();
-                            if (e.key === "Escape") setEditing(false);
+                            if (e.key === "Escape") { setEditing(false); setDraft(""); }
                         }}
+                        placeholder="Enter value"
                         style={{
                             width: 64, padding: "1px 4px", background: "rgba(255,255,255,0.1)",
                             border: "1px solid rgba(204,0,0,0.6)", color: "#CC0000",
@@ -157,6 +157,7 @@ function SliderField({
                             fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
                             fontWeight: 700, color: "#CC0000", letterSpacing: "0.02em",
                             cursor: "text", borderBottom: "1px dashed rgba(204,0,0,0.35)", lineHeight: 1,
+                            userSelect: "text",
                         }}
                     >
                         {display}
