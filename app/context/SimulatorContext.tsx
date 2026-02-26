@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import {
   runSimulation,
   SimulationInput,
@@ -9,6 +9,7 @@ import {
   AccountToggles,
   IDeCoType,
 } from "@/lib/fireCalculator";
+import { validateSimulationInput, ValidationError } from "@/lib/validation";
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
 const DEFAULT_INPUT: SimulationInput = {
@@ -39,6 +40,8 @@ const DEFAULT_INPUT: SimulationInput = {
   initialTaxableBalance: 0,
 };
 
+// ── Custom Hooks ──────────────────────────────────────────────────────────────
+
 function useDebounced<T>(value: T, delay: number) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -46,6 +49,36 @@ function useDebounced<T>(value: T, delay: number) {
     return () => clearTimeout(t);
   }, [value, delay]);
   return debounced;
+}
+
+function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
+
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      const item = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
+      if (item) {
+        setStoredValue(JSON.parse(item));
+      }
+    } catch (error) {
+      console.warn(`Failed to read localStorage key "${key}":`, error);
+    }
+  }, [key]);
+
+  // Debounce writes to localStorage
+  const setValue = useCallback((value: T) => {
+    try {
+      setStoredValue(value);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      }
+    } catch (error) {
+      console.warn(`Failed to write localStorage key "${key}":`, error);
+    }
+  }, [key]);
+
+  return [storedValue, setValue];
 }
 
 // ── Context type ──────────────────────────────────────────────────────────────
@@ -91,6 +124,8 @@ export interface SimulatorContextValue {
   initialTaxableBalance: number;
   setInitialTaxableBalance: (v: number) => void;
   result: SimulationResult | null;
+  validationErrors: ValidationError[];
+  simulationError: string | null;
   currentYear: number;
 }
 
@@ -98,27 +133,87 @@ const SimulatorContext = createContext<SimulatorContextValue | null>(null);
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 export function SimulatorProvider({ children }: { children: React.ReactNode }) {
-  const [currentAge, setCurrentAge] = useState(DEFAULT_INPUT.currentAge);
-  const [targetFireAge, setTargetFireAge] = useState(DEFAULT_INPUT.targetFireAge);
-  const [monthlyIncome, setMonthlyIncome] = useState(DEFAULT_INPUT.currentMonthlyIncome);
-  const [monthlyExpenses, setMonthlyExpenses] = useState(DEFAULT_INPUT.monthlyExpenses);
-  const [postFireMonthlyExpenses, setPostFireMonthlyExpenses] = useState(DEFAULT_INPUT.postFireMonthlyExpenses);
-  const [postFireMonthlyIncome, setPostFireMonthlyIncome] = useState(DEFAULT_INPUT.postFireMonthlyIncome ?? 0);
-  const [lifestyleInflation, setLifestyleInflation] = useState(DEFAULT_INPUT.lifestyleInflation);
-  const [postFatfireMonthlyIncome, setPostFatfireMonthlyIncome] = useState(DEFAULT_INPUT.postFatfireMonthlyIncome ?? 0);
-  const [salaryIncreaseRate, setSalaryIncreaseRate] = useState(DEFAULT_INPUT.salaryIncreaseRate);
-  const [annualInflation, setAnnualInflation] = useState(DEFAULT_INPUT.annualInflation);
-  const [accounts, setAccounts] = useState<AccountToggles>(DEFAULT_INPUT.accounts);
-  const [idecoType, setIdecoType] = useState<IDeCoType>(DEFAULT_INPUT.idecoType);
-  const [annualReturn, setAnnualReturn] = useState(DEFAULT_INPUT.annualReturn);
-  const [loans, setLoans] = useState<Loan[]>([]);
-  const [juniorNisaBalance, setJuniorNisaBalance] = useState(DEFAULT_INPUT.juniorNisaBalance);
-  const [swpDepletionAge, setSwpDepletionAge] = useState(DEFAULT_INPUT.swpDepletionAge ?? 90);
-  const [initialIdecoBalance, setInitialIdecoBalance] = useState(DEFAULT_INPUT.initialIdecoBalance ?? 0);
-  const [initialNisaTsumitateBalance, setInitialNisaTsumitateBalance] = useState(DEFAULT_INPUT.initialNisaTsumitateBalance ?? 0);
-  const [initialNisaGrowthBalance, setInitialNisaGrowthBalance] = useState(DEFAULT_INPUT.initialNisaGrowthBalance ?? 0);
-  const [initialTaxableBalance, setInitialTaxableBalance] = useState(DEFAULT_INPUT.initialTaxableBalance ?? 0);
+  // Use localStorage for persistence
+  const [currentAge, setCurrentAge] = useLocalStorage(
+    "fire-currentAge",
+    DEFAULT_INPUT.currentAge
+  );
+  const [targetFireAge, setTargetFireAge] = useLocalStorage(
+    "fire-targetFireAge",
+    DEFAULT_INPUT.targetFireAge
+  );
+  const [monthlyIncome, setMonthlyIncome] = useLocalStorage(
+    "fire-monthlyIncome",
+    DEFAULT_INPUT.currentMonthlyIncome
+  );
+  const [monthlyExpenses, setMonthlyExpenses] = useLocalStorage(
+    "fire-monthlyExpenses",
+    DEFAULT_INPUT.monthlyExpenses
+  );
+  const [postFireMonthlyExpenses, setPostFireMonthlyExpenses] = useLocalStorage(
+    "fire-postFireMonthlyExpenses",
+    DEFAULT_INPUT.postFireMonthlyExpenses
+  );
+  const [postFireMonthlyIncome, setPostFireMonthlyIncome] = useLocalStorage(
+    "fire-postFireMonthlyIncome",
+    DEFAULT_INPUT.postFireMonthlyIncome ?? 0
+  );
+  const [lifestyleInflation, setLifestyleInflation] = useLocalStorage(
+    "fire-lifestyleInflation",
+    DEFAULT_INPUT.lifestyleInflation
+  );
+  const [postFatfireMonthlyIncome, setPostFatfireMonthlyIncome] = useLocalStorage(
+    "fire-postFatfireMonthlyIncome",
+    DEFAULT_INPUT.postFatfireMonthlyIncome ?? 0
+  );
+  const [salaryIncreaseRate, setSalaryIncreaseRate] = useLocalStorage(
+    "fire-salaryIncreaseRate",
+    DEFAULT_INPUT.salaryIncreaseRate
+  );
+  const [annualInflation, setAnnualInflation] = useLocalStorage(
+    "fire-annualInflation",
+    DEFAULT_INPUT.annualInflation
+  );
+  const [accounts, setAccounts] = useLocalStorage<AccountToggles>(
+    "fire-accounts",
+    DEFAULT_INPUT.accounts
+  );
+  const [idecoType, setIdecoType] = useLocalStorage<IDeCoType>(
+    "fire-idecoType",
+    DEFAULT_INPUT.idecoType
+  );
+  const [annualReturn, setAnnualReturn] = useLocalStorage(
+    "fire-annualReturn",
+    DEFAULT_INPUT.annualReturn
+  );
+  const [loans, setLoans] = useLocalStorage<Loan[]>("fire-loans", []);
+  const [juniorNisaBalance, setJuniorNisaBalance] = useLocalStorage(
+    "fire-juniorNisaBalance",
+    DEFAULT_INPUT.juniorNisaBalance
+  );
+  const [swpDepletionAge, setSwpDepletionAge] = useLocalStorage(
+    "fire-swpDepletionAge",
+    DEFAULT_INPUT.swpDepletionAge ?? 90
+  );
+  const [initialIdecoBalance, setInitialIdecoBalance] = useLocalStorage(
+    "fire-initialIdecoBalance",
+    DEFAULT_INPUT.initialIdecoBalance ?? 0
+  );
+  const [initialNisaTsumitateBalance, setInitialNisaTsumitateBalance] = useLocalStorage(
+    "fire-initialNisaTsumitateBalance",
+    DEFAULT_INPUT.initialNisaTsumitateBalance ?? 0
+  );
+  const [initialNisaGrowthBalance, setInitialNisaGrowthBalance] = useLocalStorage(
+    "fire-initialNisaGrowthBalance",
+    DEFAULT_INPUT.initialNisaGrowthBalance ?? 0
+  );
+  const [initialTaxableBalance, setInitialTaxableBalance] = useLocalStorage(
+    "fire-initialTaxableBalance",
+    DEFAULT_INPUT.initialTaxableBalance ?? 0
+  );
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [simulationError, setSimulationError] = useState<string | null>(null);
 
   const input: SimulationInput = {
     currentAge,
@@ -146,13 +241,25 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
   const debouncedInput = useDebounced(input, 150);
 
   useEffect(() => {
+    const errors = validateSimulationInput(debouncedInput);
+    setValidationErrors(errors);
+
+    if (errors.length > 0) {
+      setResult(null);
+      setSimulationError(null);
+      return;
+    }
+
     try {
       setResult(runSimulation(debouncedInput));
+      setSimulationError(null);
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Unknown simulation error";
       console.error("Simulation error:", e);
+      setSimulationError(errorMessage);
+      setResult(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(debouncedInput)]);
+  }, [debouncedInput]);
 
   return (
     <SimulatorContext.Provider
@@ -178,6 +285,8 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         initialNisaGrowthBalance, setInitialNisaGrowthBalance,
         initialTaxableBalance, setInitialTaxableBalance,
         result,
+        validationErrors,
+        simulationError,
         currentYear: new Date().getFullYear(),
       }}
     >
