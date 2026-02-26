@@ -254,9 +254,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <aside
           className={`sidebar-section newsprint-texture${sidebarOpen ? " mobile-open" : ""}`}
           style={{
-            width: 320,
-            minWidth: 280,
-            maxWidth: 320,
+            width: 345,
+            minWidth: 300,
+            maxWidth: 345,
             flexShrink: 0,
             background: "#111111",
             borderRight: "1px solid #111111",

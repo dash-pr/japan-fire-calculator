@@ -688,7 +688,7 @@ export default function InputPanel({
                                 type="checkbox"
                                 checked={pensionEnabled}
                                 onChange={(e) => onPensionEnabled(e.target.checked)}
-                                style={{ accentColor: pensionEnabled ? "#CC0000" : "#F9F9F7", cursor: "pointer" }}
+                                style={{ accentColor: pensionEnabled ? "#FF8C00" : "#F9F9F7", cursor: "pointer" }}
                             />
                             <label
                                 style={{
@@ -734,7 +734,7 @@ export default function InputPanel({
                                         type="checkbox"
                                         checked={pensionInflationAdjusted}
                                         onChange={(e) => onPensionInflationAdjusted(e.target.checked)}
-                                        style={{ accentColor: pensionInflationAdjusted ? "#CC0000" : "#F9F9F7", cursor: "pointer" }}
+                                        style={{ accentColor: pensionInflationAdjusted ? "#FF8C00" : "#F9F9F7", cursor: "pointer" }}
                                     />
                                     <span
                                         style={{
@@ -1014,7 +1014,7 @@ export default function InputPanel({
                     />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                         <div>
-                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.8)", display: "block", marginBottom: 3 }}>Principal (¥)</label>
+                            <label style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Principal (¥)</label>
                             <NumberInput
                                 value={newLoan.principal}
                                 onChange={(v) => setNewLoan((l) => ({ ...l, principal: v }))}
@@ -1022,7 +1022,7 @@ export default function InputPanel({
                             />
                         </div>
                         <div>
-                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.8)", display: "block", marginBottom: 3 }}>Interest Rate (%)</label>
+                            <label style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Interest Rate (%)</label>
                             <NumberInput
                                 value={newLoan.annualInterestRate}
                                 onChange={(v) => setNewLoan((l) => ({ ...l, annualInterestRate: v }))}
@@ -1031,7 +1031,7 @@ export default function InputPanel({
                         </div>
                     </div>
                     <div>
-                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.8)", display: "block", marginBottom: 3 }}>Term (years)</label>
+                        <label style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Term (years)</label>
                         <NumberInput
                             value={newLoan.remainingMonths / 12}
                             onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: Math.round(v * 12) }))}
@@ -1041,7 +1041,7 @@ export default function InputPanel({
                     <button
                         onClick={addLoan}
                         style={{
-                            background: "#CC0000",
+                            background: "#FF8C00",
                             border: "none",
                             color: "#F9F9F7",
                             fontFamily: "'JetBrains Mono', monospace",
