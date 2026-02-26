@@ -29,6 +29,100 @@ const C = {
   expRet:     "#E88080",
 };
 
+// ── Column header definitions with tooltip descriptions ──────────────────────
+const COLUMNS: { label: string; tip: string }[] = [
+  { label: "Year",          tip: "Calendar year" },
+  { label: "Age",           tip: "Your age in December of this year" },
+  { label: "Phase",         tip: "Working (accumulating) or Retired (withdrawing)" },
+  { label: "Gross Income",  tip: "Monthly pre-tax salary (¥/month). Zero after retirement" },
+  { label: "→ Expenses",    tip: "Monthly living expenses (¥/month), inflation-adjusted. Excludes loan payments" },
+  { label: "→ Loans",       tip: "Monthly loan/mortgage payment (¥/month). Tracked separately from living expenses" },
+  { label: "→ iDeCo",       tip: "Monthly iDeCo contribution (¥/month). Tax-deductible — actual cost is ~80% of this amount" },
+  { label: "→ NISA-T",      tip: "Monthly NISA Tsumitate contribution (¥/month). Max ¥100k/mo, ¥6M lifetime. Tax-free growth" },
+  { label: "→ NISA-G",      tip: "Monthly NISA Growth contribution (¥/month). Max ¥200k/mo, ¥12M lifetime. Tax-free growth" },
+  { label: "→ Taxable",     tip: "Monthly taxable brokerage contribution (¥/month). Remainder after all other allocations" },
+  { label: "SWP / Side",    tip: "Monthly withdrawal + side income during retirement (¥/month). SWP depletes portfolio to ¥0 at target age" },
+  { label: "Net ±",         tip: "Monthly surplus or deficit (¥/month). Negative = expenses exceed income for this year" },
+];
+
+// ── Tooltip component for column headers ────────────────────────────────────
+function InfoTip({ text }: { text: string }) {
+  const [show, setShow] = React.useState(false);
+  return (
+    <span
+      style={{ position: "relative", cursor: "help", marginLeft: 3 }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span style={{ opacity: 0.5, fontSize: 7 }}>ⓘ</span>
+      {show && (
+        <span
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 6px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#111",
+            color: "#F9F9F7",
+            padding: "7px 10px",
+            borderRadius: 3,
+            fontSize: 10,
+            fontWeight: 400,
+            letterSpacing: "0.02em",
+            textTransform: "none",
+            whiteSpace: "normal",
+            width: 200,
+            lineHeight: 1.5,
+            zIndex: 10,
+            border: "1px solid rgba(255,255,255,0.15)",
+            pointerEvents: "none",
+          }}
+        >
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
+// ── Warning tooltip for negative-net expense cells ──────────────────────────
+function ExpenseWarning({ maxExpense }: { maxExpense: number }) {
+  const [show, setShow] = React.useState(false);
+  return (
+    <span
+      style={{ position: "relative", cursor: "help", marginLeft: 4 }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <span style={{ color: "#CC0000", fontSize: 11 }}>⚠</span>
+      {show && (
+        <span
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 6px)",
+            right: 0,
+            background: "#111",
+            color: "#F9F9F7",
+            padding: "8px 12px",
+            borderRadius: 3,
+            fontSize: 10,
+            fontWeight: 400,
+            whiteSpace: "normal",
+            width: 220,
+            lineHeight: 1.5,
+            zIndex: 10,
+            border: "1px solid rgba(255,255,255,0.15)",
+            pointerEvents: "none",
+          }}
+        >
+          <span style={{ color: "#FF8C00", fontWeight: 700 }}>Deficit year.</span>{" "}
+          Max affordable monthly expenses for this year: <span style={{ fontWeight: 700, color: "#5BBF6B" }}>{formatYen(Math.max(0, maxExpense))}</span>
+        </span>
+      )}
+    </span>
+  );
+}
+
 const yFmt = (v: number) =>
   Math.abs(v) >= 1_0000_0000
     ? `¥${(v / 1_0000_0000).toFixed(1)}億`
@@ -482,22 +576,9 @@ export default function CashFlowPage() {
                   zIndex: 1,
                 }}
               >
-                {[
-                  "Year",
-                  "Age",
-                  "Phase",
-                  "Gross Income",
-                  "→ Expenses",
-                  "→ Loans",
-                  "→ iDeCo",
-                  "→ NISA-T",
-                  "→ NISA-G",
-                  "→ Taxable",
-                  "SWP / Side",
-                  "Net ±",
-                ].map((h) => (
+                {COLUMNS.map((col) => (
                   <th
-                    key={h}
+                    key={col.label}
                     style={{
                       padding: "7px 12px",
                       textAlign: "right",
@@ -510,7 +591,8 @@ export default function CashFlowPage() {
                       fontFamily: "'JetBrains Mono', monospace",
                     }}
                   >
-                    {h}
+                    {col.label}
+                    <InfoTip text={col.tip} />
                   </th>
                 ))}
               </tr>
@@ -524,11 +606,18 @@ export default function CashFlowPage() {
                   ? s.swpWithdrawal + s.postFireSideIncome - s.monthlyExpenses - s.loanPayment
                   : s.grossIncome - s.monthlyExpenses - s.loanPayment - idecoActualCost - s.nisaTsumCont - s.nisaGrowthCont - s.taxableCont;
 
+                // Max affordable monthly expenses = income minus all other obligations
+                const maxAffordableExpense = isRetired
+                  ? s.swpWithdrawal + s.postFireSideIncome - s.loanPayment
+                  : s.grossIncome - s.loanPayment - idecoActualCost - s.nisaTsumCont - s.nisaGrowthCont - s.taxableCont;
+
+                const isDeficit = netDelta < 0;
+
                 return (
                   <tr
                     key={s.year}
                     style={{
-                      background: isRetired ? "#FFF8F2" : undefined,
+                      background: isDeficit ? "#FFF5F5" : isRetired ? "#FFF8F2" : undefined,
                       borderTop:
                         s.age === targetFireAge
                           ? "2px solid #CC6600"
@@ -555,8 +644,9 @@ export default function CashFlowPage() {
                     >
                       {isRetired ? "—" : formatYen(s.grossIncome)}
                     </td>
-                    <td style={{ ...tdStyle, color: C.expenses }}>
+                    <td style={{ ...tdStyle, color: isDeficit ? "#CC0000" : C.expenses, fontWeight: isDeficit ? 600 : 400 }}>
                       {formatYen(s.monthlyExpenses)}
+                      {isDeficit && <ExpenseWarning maxExpense={maxAffordableExpense} />}
                     </td>
                     <td style={{ ...tdStyle, color: C.loans }}>
                       {s.loanPayment > 0 ? formatYen(s.loanPayment) : "—"}
