@@ -152,7 +152,7 @@ export default function YearlyTable({ result, targetFireAge, maxTableHeight = 36
                                         <td style={{ ...tdStyle, color: incomeColor, fontWeight: isFired ? 600 : 400 }}>
                                             {monthlyIncome > 0 ? `${formatYen(monthlyIncome)}/mo` : "—"}
                                         </td>
-                                        <td style={tdStyle}>{formatYen(snap.monthlyExpenses)}/mo</td>
+                                        <td style={tdStyle}>{formatYen(snap.monthlyExpenses + snap.loanPayment)}/mo</td>
                                         <td style={{ ...tdStyle, textAlign: "center" }}>{status}</td>
                                     </tr>
                                 </React.Fragment>

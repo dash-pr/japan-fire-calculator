@@ -63,7 +63,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                     {snap.swpWithdrawal > 0 && <Row label="SWP Withdrawal" value={formatYen(snap.swpWithdrawal)} color="#CC6600" />}
                     <div style={{ height: 1, background: "rgba(255,255,255,0.12)", margin: "4px 0" }} />
                     <Row label="FIRE Capital Needed" value={formatYen(snap.requiredCapital)}             color="#CC0000"                 />
-                    <Row label="Monthly Expenses"    value={formatYen(snap.monthlyExpenses)}             color="rgba(255,255,255,0.35)" />
+                    <Row label="Monthly Expenses"    value={formatYen(snap.monthlyExpenses + snap.loanPayment)}             color="rgba(255,255,255,0.35)" />
                 </div>
             </div>
         );

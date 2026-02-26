@@ -69,8 +69,9 @@ export interface MonthlySnapshot {
   requiredCapital: number;   // SWP-based capital needed at this point to reach 90
   leanFireCapital: number;
   fatFireCapital: number;
-  monthlyExpenses: number;   // inflation-adjusted expenses for this month
+  monthlyExpenses: number;   // inflation-adjusted expenses for this month (excluding loans)
   annualExpenses: number;
+  loanPayment: number;       // monthly loan/mortgage payment for this month
   // ── Cash-flow breakdown (new) ──────────────────────────────────────────
   grossIncome: number;       // salary before deductions (0 after FIRE unless side income)
   idecoCont: number;         // iDeCo contribution this month
@@ -509,6 +510,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       fatFireCapital:  Math.round(fatFireCapital),
       monthlyExpenses: Math.round(isFired ? baseExpense : currentMonthlyExpenses),
       annualExpenses:  Math.round(annualExpenses),
+      loanPayment:     Math.round(loanPayment),
       grossIncome:     Math.round(isFired ? 0 : monthlyIncome),
       idecoCont:       Math.round(idecoCont_),
       nisaTsumCont:    Math.round(nisaTsumCont_),
