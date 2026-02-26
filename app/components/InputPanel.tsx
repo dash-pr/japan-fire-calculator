@@ -671,10 +671,16 @@ export default function InputPanel({
                     >
                         <div
                             style={{
+                                fontFamily: "'JetBrains Mono', monospace",
+                                fontSize: 13,
+                                fontWeight: 700,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                color: "rgba(255,255,255,0.75)",
+                                marginBottom: 10,
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 10,
-                                marginBottom: 10,
                             }}
                         >
                             <input
@@ -788,11 +794,11 @@ export default function InputPanel({
                         <div
                             style={{
                                 fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 12,
-                                fontWeight: 600,
+                                fontSize: 13,
+                                fontWeight: 700,
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
-                                color: "#F9F9F7",
+                                color: "rgba(255,255,255,0.75)",
                                 marginBottom: 10,
                             }}
                         >
@@ -823,11 +829,11 @@ export default function InputPanel({
                         <div
                             style={{
                                 fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 12,
-                                fontWeight: 600,
+                                fontSize: 13,
+                                fontWeight: 700,
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
-                                color: "#F9F9F7",
+                                color: "rgba(255,255,255,0.75)",
                                 marginBottom: 10,
                             }}
                         >
