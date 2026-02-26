@@ -69,7 +69,7 @@ export default function NenkinPage() {
           fontWeight: 700,
           margin: 0,
           marginBottom: 4,
-          color: "#F9F9F7",
+          color: "#111111",
         }}>
           Nenkin Calculator
         </h1>
@@ -77,7 +77,7 @@ export default function NenkinPage() {
           fontFamily: "'Lora', Georgia, serif",
           fontSize: 13,
           fontStyle: "italic",
-          color: "var(--n500)",
+          color: "#737373",
           margin: 0,
         }}>
           Calculate your estimated Japanese pension (nenkin) payout based on contribution years and delay options.
@@ -89,8 +89,8 @@ export default function NenkinPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Common Settings */}
           <div style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(17,17,17,0.04)",
+            border: "1px solid rgba(17,17,17,0.1)",
             padding: "16px 18px",
             borderRadius: "2px",
           }}>
@@ -100,7 +100,7 @@ export default function NenkinPage() {
               fontWeight: 700,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "#F9F9F7",
+              color: "#111111",
               marginBottom: 12,
             }}>
               Pension Start Settings
@@ -113,7 +113,7 @@ export default function NenkinPage() {
                 justifyContent: "space-between",
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 10,
-                color: "rgba(255,255,255,0.4)",
+                color: "#737373",
                 letterSpacing: "0.08em",
                 marginBottom: 6,
               }}>
@@ -131,7 +131,7 @@ export default function NenkinPage() {
               />
               <div style={{
                 fontSize: 9,
-                color: "rgba(255,255,255,0.3)",
+                color: "#999999",
                 marginTop: 4,
               }}>
                 Standard age: 65. Starting earlier reduces payout by ~0.5% per year.
@@ -145,7 +145,7 @@ export default function NenkinPage() {
                 justifyContent: "space-between",
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 10,
-                color: "rgba(255,255,255,0.4)",
+                color: "#737373",
                 letterSpacing: "0.08em",
                 marginBottom: 6,
               }}>
@@ -163,7 +163,7 @@ export default function NenkinPage() {
               />
               <div style={{
                 fontSize: 9,
-                color: "rgba(255,255,255,0.3)",
+                color: "#999999",
                 marginTop: 4,
               }}>
                 Each year of delay increases payout by 8.4% (max +84% at 10 years).
@@ -173,8 +173,8 @@ export default function NenkinPage() {
 
           {/* Kokumin Nenkin */}
           <div style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(17,17,17,0.04)",
+            border: "1px solid rgba(17,17,17,0.1)",
             padding: "16px 18px",
             borderRadius: "2px",
           }}>
@@ -191,7 +191,7 @@ export default function NenkinPage() {
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: kokuminEnabled ? "#F9F9F7" : "rgba(255,255,255,0.5)",
+                color: kokuminEnabled ? "#111111" : "#999999",
                 cursor: "pointer",
                 flex: 1,
               }}>
@@ -206,7 +206,7 @@ export default function NenkinPage() {
                   justifyContent: "space-between",
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 10,
-                  color: "rgba(255,255,255,0.4)",
+                  color: "#737373",
                   letterSpacing: "0.08em",
                   marginBottom: 6,
                 }}>
@@ -224,7 +224,7 @@ export default function NenkinPage() {
                 />
                 <div style={{
                   fontSize: 9,
-                  color: "rgba(255,255,255,0.3)",
+                  color: "#999999",
                   marginTop: 4,
                 }}>
                   Maximum 40 years. Minimum 25 years required for payment eligibility.
@@ -235,8 +235,8 @@ export default function NenkinPage() {
 
           {/* Employee Nenkin */}
           <div style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(17,17,17,0.04)",
+            border: "1px solid rgba(17,17,17,0.1)",
             padding: "16px 18px",
             borderRadius: "2px",
           }}>
@@ -253,7 +253,7 @@ export default function NenkinPage() {
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: employeeEnabled ? "#F9F9F7" : "rgba(255,255,255,0.5)",
+                color: employeeEnabled ? "#111111" : "#999999",
                 cursor: "pointer",
                 flex: 1,
               }}>
@@ -269,7 +269,7 @@ export default function NenkinPage() {
                     justifyContent: "space-between",
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 10,
-                    color: "rgba(255,255,255,0.4)",
+                    color: "#737373",
                     letterSpacing: "0.08em",
                     marginBottom: 6,
                   }}>
@@ -292,7 +292,7 @@ export default function NenkinPage() {
                     display: "block",
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 10,
-                    color: "rgba(255,255,255,0.4)",
+                    color: "#737373",
                     letterSpacing: "0.08em",
                     marginBottom: 6,
                   }}>
@@ -309,15 +309,15 @@ export default function NenkinPage() {
                       padding: "8px 10px",
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 11,
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      color: "#F9F9F7",
+                      background: "rgba(17,17,17,0.05)",
+                      border: "1px solid rgba(17,17,17,0.1)",
+                      color: "#111111",
                       boxSizing: "border-box",
                     }}
                   />
                   <div style={{
                     fontSize: 9,
-                    color: "rgba(255,255,255,0.3)",
+                    color: "#999999",
                     marginTop: 4,
                   }}>
                     Your average monthly salary during employment period.
@@ -333,8 +333,8 @@ export default function NenkinPage() {
           {/* Overall Results */}
           {results && (
             <div style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(17,17,17,0.04)",
+              border: "1px solid rgba(17,17,17,0.1)",
               padding: "20px 18px",
               borderRadius: "2px",
             }}>
@@ -344,7 +344,7 @@ export default function NenkinPage() {
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "#F9F9F7",
+                color: "#111111",
                 marginBottom: 16,
               }}>
                 Estimated Nenkin Payout
@@ -355,7 +355,7 @@ export default function NenkinPage() {
                   <div style={{
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 9,
-                    color: "rgba(255,255,255,0.4)",
+                    color: "#737373",
                     letterSpacing: "0.08em",
                     marginBottom: 4,
                   }}>
@@ -371,13 +371,13 @@ export default function NenkinPage() {
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "rgba(255,255,255,0.1)" }} />
+                <div style={{ height: 1, background: "rgba(17,17,17,0.15)" }} />
 
                 <div>
                   <div style={{
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 9,
-                    color: "rgba(255,255,255,0.4)",
+                    color: "#737373",
                     letterSpacing: "0.08em",
                     marginBottom: 4,
                   }}>
@@ -393,14 +393,14 @@ export default function NenkinPage() {
                   </div>
                 </div>
 
-                <div style={{ height: 1, background: "rgba(255,255,255,0.1)" }} />
+                <div style={{ height: 1, background: "rgba(17,17,17,0.15)" }} />
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                   <div>
                     <div style={{
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 9,
-                      color: "rgba(255,255,255,0.4)",
+                      color: "#737373",
                       letterSpacing: "0.08em",
                       marginBottom: 4,
                     }}>
@@ -410,7 +410,7 @@ export default function NenkinPage() {
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 14,
                       fontWeight: 600,
-                      color: "#F9F9F7",
+                      color: "#111111",
                     }}>
                       {results.startAge}
                     </div>
@@ -419,7 +419,7 @@ export default function NenkinPage() {
                     <div style={{
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 9,
-                      color: "rgba(255,255,255,0.4)",
+                      color: "#737373",
                       letterSpacing: "0.08em",
                       marginBottom: 4,
                     }}>
@@ -459,19 +459,19 @@ export default function NenkinPage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Monthly:</span>
+                  <span style={{ fontSize: 11, color: "#525252" }}>Monthly:</span>
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600 }}>
                     {formatYen(kokuminResult.monthlyAmount)}
                   </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Annual:</span>
+                  <span style={{ fontSize: 11, color: "#525252" }}>Annual:</span>
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600 }}>
                     {formatYen(kokuminResult.annualAmount)}
                   </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Contribution years:</span>
+                  <span style={{ fontSize: 11, color: "#525252" }}>Contribution years:</span>
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600 }}>
                     {kokuminResult.totalContributionYears}
                   </span>
@@ -499,19 +499,19 @@ export default function NenkinPage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Monthly:</span>
+                  <span style={{ fontSize: 11, color: "#525252" }}>Monthly:</span>
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600 }}>
                     {formatYen(employeeResult.monthlyAmount)}
                   </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Annual:</span>
+                  <span style={{ fontSize: 11, color: "#525252" }}>Annual:</span>
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600 }}>
                     {formatYen(employeeResult.annualAmount)}
                   </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Contribution years:</span>
+                  <span style={{ fontSize: 11, color: "#525252" }}>Contribution years:</span>
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600 }}>
                     {employeeResult.totalContributionYears}
                   </span>
@@ -548,7 +548,7 @@ export default function NenkinPage() {
                 {results.notes.map((note, idx) => (
                   <li key={idx} style={{
                     fontSize: 9,
-                    color: "rgba(255,255,255,0.6)",
+                    color: "#525252",
                     lineHeight: 1.4,
                   }}>
                     {note}
@@ -562,8 +562,8 @@ export default function NenkinPage() {
 
       {/* Info Section */}
       <div style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.1)",
+        background: "rgba(17,17,17,0.04)",
+        border: "1px solid rgba(17,17,17,0.1)",
         padding: "20px 18px",
         borderRadius: "2px",
       }}>
@@ -573,7 +573,7 @@ export default function NenkinPage() {
           fontWeight: 700,
           letterSpacing: "0.1em",
           textTransform: "uppercase",
-          color: "#F9F9F7",
+          color: "#111111",
           marginBottom: 12,
         }}>
           About Nenkin (年金)
@@ -593,7 +593,7 @@ export default function NenkinPage() {
               margin: 0,
               paddingLeft: 16,
               fontSize: 11,
-              color: "rgba(255,255,255,0.6)",
+              color: "#525252",
               lineHeight: 1.6,
             }}>
               <li>Self-employed, freelancers, students (aged 20-60)</li>
@@ -618,7 +618,7 @@ export default function NenkinPage() {
               margin: 0,
               paddingLeft: 16,
               fontSize: 11,
-              color: "rgba(255,255,255,0.6)",
+              color: "#525252",
               lineHeight: 1.6,
             }}>
               <li>Employees of companies</li>
@@ -630,7 +630,7 @@ export default function NenkinPage() {
           </div>
         </div>
 
-        <div style={{ height: 1, background: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
+        <div style={{ height: 1, background: "rgba(17,17,17,0.15)", margin: "16px 0" }} />
 
         <div>
           <div style={{
@@ -645,7 +645,7 @@ export default function NenkinPage() {
           <p style={{
             margin: 0,
             fontSize: 11,
-            color: "rgba(255,255,255,0.6)",
+            color: "#525252",
             lineHeight: 1.6,
           }}>
             Each year of delay beyond age 65 increases your monthly payout by 8.4%, up to 84% additional at 10 years of delay. Conversely, starting before 65 reduces your payment proportionally.
@@ -660,7 +660,7 @@ export default function NenkinPage() {
         padding: "14px 16px",
         borderRadius: "2px",
         fontSize: 10,
-        color: "rgba(255,255,255,0.6)",
+        color: "#525252",
         lineHeight: 1.6,
       }}>
         <strong style={{ color: "#FF6B6B" }}>⚠ Disclaimer:</strong> This calculator provides rough estimates based on 2024 nenkin rates and simplified formulas. Actual nenkin payments may differ due to inflation adjustments, bonus calculations, and other factors. For accurate calculations, consult the official Nenkin Net website (nenkinet.mlit.go.jp) or Japan Pension Service.
