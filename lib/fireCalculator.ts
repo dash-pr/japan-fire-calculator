@@ -228,40 +228,8 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     if (m > 0) monthlyIncome *= (1 + monthlyIncomeGrowth);
     if (m > 0) currentMonthlyExpenses *= (1 + monthlyInflation);
 
-    // ── At FIRE: inject Junior NISA balance (grown from simulation start) ──
-    if (!juniorNisaInjected && isFired && accounts.juniorNisaEnabled && juniorNisaBalance > 0) {
-      // grow the junior NISA balance from today to FIRE date
-      const monthsToFire = (targetFireAge - currentAge) * 12;
-      juniorNisa = juniorNisaBalance * Math.pow(1 + monthlyReturn, monthsToFire);
-      // Fold into NISA growth bucket (tax-free)
-      nisaGrowth += juniorNisa;
-      juniorNisa = 0;
-      juniorNisaInjected = true;
-    }
-
-    // ── iDeCo tax benefit ─────────────────────────────────────────────────
-    const idecoTaxSaving = accounts.idecoEnabled && !isFired
-      ? idecoMonthlyLimit * INCOME_TAX_EFFECTIVE
-      : 0;
-
-    // Expenses for this month (use postFire amount during retirement)
-    // Accounts for both inflation and lifestyle inflation during retirement
-    const baseExpense = isFired
-      ? postFireMonthlyExpenses
-          * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12 + (m - Math.round((targetFireAge - currentAge) * 12)))
-          * Math.pow(1 + monthlyLifestyleInflation, m - Math.round((targetFireAge - currentAge) * 12))
-      : currentMonthlyExpenses;
-
-    // ── Disposable income (accumulation only) ────────────────────────────
-    const disposableIncome = isFired ? 0 : Math.max(
-      0,
-      monthlyIncome
-        - currentMonthlyExpenses
-        - (accounts.idecoEnabled ? idecoMonthlyLimit : 0)
-        + idecoTaxSaving
-    );
-
     // ── Loan payments (reduce principal each month) ───────────────────────
+    // Calculate early so it can be included in expense calculations
     let loanPayment = 0;
     // Calculate total loan payment for this month and reduce principal
     for (let loanIdx = 0; loanIdx < loanStates.length; loanIdx++) {
@@ -286,14 +254,48 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       }
     }
 
+    // ── At FIRE: inject Junior NISA balance (grown from simulation start) ──
+    if (!juniorNisaInjected && isFired && accounts.juniorNisaEnabled && juniorNisaBalance > 0) {
+      // grow the junior NISA balance from today to FIRE date
+      const monthsToFire = (targetFireAge - currentAge) * 12;
+      juniorNisa = juniorNisaBalance * Math.pow(1 + monthlyReturn, monthsToFire);
+      // Fold into NISA growth bucket (tax-free)
+      nisaGrowth += juniorNisa;
+      juniorNisa = 0;
+      juniorNisaInjected = true;
+    }
+
+    // Expenses for this month (use postFire amount during retirement)
+    // Accounts for both inflation and lifestyle inflation during retirement
+    // Also includes any ongoing loan payments during retirement
+    const baseExpense = isFired
+      ? postFireMonthlyExpenses
+          * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12 + (m - Math.round((targetFireAge - currentAge) * 12)))
+          * Math.pow(1 + monthlyLifestyleInflation, m - Math.round((targetFireAge - currentAge) * 12))
+          + loanPayment
+      : currentMonthlyExpenses;
+
+    // ── Disposable income (accumulation only) ────────────────────────────
+    // After expenses, loans, and iDeCo, what's left for NISA/taxable?
+    // If loans exceed (income - expenses - iDeCo), then iDeCo is reduced accordingly
+    const netIncomeAfterExpenses = monthlyIncome - currentMonthlyExpenses;
+    const idecoAfterLoans = accounts.idecoEnabled
+      ? Math.max(0, Math.min(idecoMonthlyLimit, netIncomeAfterExpenses - loanPayment))
+      : 0;
+    const idecoTaxSavingActual = idecoAfterLoans * INCOME_TAX_EFFECTIVE;
+    const disposableIncome = isFired ? 0 : Math.max(
+      0,
+      netIncomeAfterExpenses - idecoAfterLoans + idecoTaxSavingActual - loanPayment
+    );
+
     let remainingSavings = disposableIncome - loanPayment;
 
     // ── Contributions (accumulation phase only) ───────────────────────────
     if (!isFired) {
-      // iDeCo
-      if (accounts.idecoEnabled) {
-        ideco += idecoMonthlyLimit;
-        totalIdecoContributed_ += idecoMonthlyLimit;
+      // iDeCo — reduced if loans impact available funds
+      if (accounts.idecoEnabled && idecoAfterLoans > 0) {
+        ideco += idecoAfterLoans;
+        totalIdecoContributed_ += idecoAfterLoans;
       }
 
       // NISA — tsumitate slot first, then growth
@@ -460,14 +462,15 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     const annualExpenses = (isFired ? baseExpense : currentMonthlyExpenses) * 12;
 
     // Per-month contribution tracking for cash-flow tab
-    const idecoCont_     = (!isFired && accounts.idecoEnabled) ? idecoMonthlyLimit : 0;
+    // Note: iDeCo may be reduced if loans impact available funds
+    const idecoCont_     = (!isFired && accounts.idecoEnabled) ? idecoAfterLoans : 0;
     // Approximation: derive NISA + taxable contribs from running totals diff
     // We snapshot running totals before/after — simpler to re-derive from logic above.
     // For yearly rollup it's accurate enough since both in same iteration.
     const nisaTsumMonthlyMax = NISA_TSUMITATE_ANNUAL / 12;
     const nisaGrowthMonthlyMax = NISA_GROWTH_ANNUAL / 12;
     const disposableForContrib = !isFired
-      ? Math.max(0, monthlyIncome - currentMonthlyExpenses - idecoCont_ + (idecoCont_ * INCOME_TAX_EFFECTIVE))
+      ? Math.max(0, monthlyIncome - currentMonthlyExpenses - idecoCont_ + (idecoCont_ * INCOME_TAX_EFFECTIVE) - loanPayment)
       : 0;
     const nisaTsumCont_  = !isFired && accounts.nisaEnabled
       ? Math.min(nisaTsumMonthlyMax, nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME ? Math.max(0, disposableForContrib) : 0, disposableForContrib)
