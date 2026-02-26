@@ -250,8 +250,6 @@ function NumberInput({
     prefix?: string;
     suffix?: string;
 }) {
-    const [isFocused, setIsFocused] = React.useState(false);
-
     return (
         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
             {prefix && (
@@ -270,12 +268,10 @@ function NumberInput({
             )}
             <input
                 type="number"
-                value={value === 0 && !isFocused ? "" : value}
+                value={value === 0 ? "" : value}
                 min={min}
                 max={max}
                 step={step}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
                 onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                 placeholder="0"
                 style={{
