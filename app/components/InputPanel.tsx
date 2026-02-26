@@ -250,6 +250,8 @@ function NumberInput({
     prefix?: string;
     suffix?: string;
 }) {
+    const [isFocused, setIsFocused] = React.useState(false);
+
     return (
         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
             {prefix && (
@@ -268,12 +270,18 @@ function NumberInput({
             )}
             <input
                 type="number"
-                value={value}
+                value={value === 0 && !isFocused ? "" : value}
                 min={min}
                 max={max}
                 step={step}
-                onChange={(e) => onChange(Number(e.target.value))}
-                style={{ paddingLeft: prefix ? 18 : 4, paddingRight: suffix ? 26 : 4 }}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                placeholder="0"
+                style={{
+                    paddingLeft: prefix ? 18 : 4,
+                    paddingRight: suffix ? 26 : 4,
+                }}
             />
             {suffix && (
                 <span
@@ -558,6 +566,136 @@ export default function InputPanel({
                 onChange={(v) => onAccounts({ ...accounts, taxableEnabled: v })}
             />
 
+            {/* ── Advanced Options (collapsible) ── */}
+            <button
+                onClick={() => setShowAdvanced((s) => !s)}
+                style={{
+                    width: "100%", padding: "9px 0 8px",
+                    background: "transparent", border: "none",
+                    borderTop: "1px solid rgba(255,255,255,0.12)",
+                    color: "rgba(255,255,255,0.4)",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 9, fontWeight: 700, letterSpacing: "0.22em",
+                    textTransform: "uppercase", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    marginTop: 8, marginBottom: showAdvanced ? 12 : 8,
+                }}
+            >
+                Advanced Options
+                {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            {showAdvanced && (
+                <div style={{ marginBottom: 4 }}>
+                    {/* ── Pension / Social Security Section ── */}
+                    <div
+                        style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            padding: "12px 12px",
+                            marginBottom: 12,
+                            borderRadius: "2px",
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                marginBottom: 10,
+                            }}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={pensionEnabled}
+                                onChange={(e) => onPensionEnabled(e.target.checked)}
+                                style={{ accentColor: pensionEnabled ? "#CC0000" : "#F9F9F7", cursor: "pointer" }}
+                            />
+                            <label
+                                style={{
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    letterSpacing: "0.08em",
+                                    textTransform: "uppercase",
+                                    color: pensionEnabled ? "#F9F9F7" : "rgba(255,255,255,0.5)",
+                                    cursor: "pointer",
+                                    flex: 1,
+                                }}
+                            >
+                                Pension / Social Security
+                            </label>
+                        </div>
+                        {pensionEnabled && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <SliderField
+                                    label="Start Age"
+                                    value={pensionStartAge}
+                                    onChange={onPensionStartAge}
+                                    min={55}
+                                    max={75}
+                                    step={1}
+                                    info="Age when pension income begins"
+                                />
+                                <Field label="Monthly Amount">
+                                    <NumberInput value={pensionMonthlyAmount} onChange={onPensionMonthlyAmount} step={10000} prefix="¥" min={0} />
+                                </Field>
+                                <label
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                        cursor: "pointer",
+                                        padding: "6px 8px",
+                                        background: "rgba(255,255,255,0.02)",
+                                        borderRadius: "1px",
+                                    }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={pensionInflationAdjusted}
+                                        onChange={(e) => onPensionInflationAdjusted(e.target.checked)}
+                                        style={{ accentColor: pensionInflationAdjusted ? "#CC0000" : "#F9F9F7", cursor: "pointer" }}
+                                    />
+                                    <span
+                                        style={{
+                                            fontFamily: "'JetBrains Mono', monospace",
+                                            fontSize: 9,
+                                            color: "rgba(255,255,255,0.6)",
+                                            letterSpacing: "0.06em",
+                                        }}
+                                    >
+                                        Adjust for inflation
+                                    </span>
+                                </label>
+                            </div>
+                        )}
+                    </div>
+
+                    <Field
+                        label="Post-FIRE Side Income / mo"
+                        info="Monthly income during retirement (part-time, rental, etc.). In today's yen."
+                    >
+                        <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
+                    </Field>
+                    <SliderField
+                        label="Lifestyle Inflation / yr"
+                        value={lifestyleInflation}
+                        onChange={onLifestyleInflation}
+                        min={0}
+                        max={8}
+                        step={0.25}
+                        format={fmtPct}
+                        info="Annual increase in post-fire expenses beyond inflation. E.g., traveling more as you retire."
+                    />
+                    <Field
+                        label="Post-FATFIRE Side Income / mo"
+                        info="Additional monthly income that kicks in after you reach Fat FIRE. In today's yen."
+                    >
+                        <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
+                    </Field>
+                </div>
+            )}
+
             {/* ── Current Portfolio Balances ── */}
             <SectionHeader title="Current Portfolio (optional)" />
             <Field
@@ -584,76 +722,6 @@ export default function InputPanel({
             >
                 <NumberInput value={initialTaxableBalance} onChange={onInitialTaxableBalance} step={100000} prefix="¥" min={0} />
             </Field>
-
-            {/* ── Advanced Options (collapsible) ── */}
-            <button
-                onClick={() => setShowAdvanced((s) => !s)}
-                style={{
-                    width: "100%", padding: "9px 0 8px",
-                    background: "transparent", border: "none",
-                    borderTop: "1px solid rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.4)",
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 9, fontWeight: 700, letterSpacing: "0.22em",
-                    textTransform: "uppercase", cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    marginTop: 8, marginBottom: showAdvanced ? 12 : 8,
-                }}
-            >
-                Advanced Options
-                {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            </button>
-            {showAdvanced && (
-                <div style={{ marginBottom: 4 }}>
-                    <Field
-                        label="Post-FIRE Side Income / mo"
-                        info="Monthly income during retirement (pension, part-time, rental). In today's yen."
-                    >
-                        <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
-                    </Field>
-                    <SliderField
-                        label="Lifestyle Inflation / yr"
-                        value={lifestyleInflation}
-                        onChange={onLifestyleInflation}
-                        min={0}
-                        max={8}
-                        step={0.25}
-                        format={fmtPct}
-                        info="Annual increase in post-fire expenses beyond inflation. E.g., traveling more as you retire."
-                    />
-                    <Field
-                        label="Post-FATFIRE Side Income / mo"
-                        info="Additional monthly income that kicks in after you reach Fat FIRE. In today's yen."
-                    >
-                        <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
-                    </Field>
-                    <Toggle
-                        label="Pension / Social Security"
-                        checked={pensionEnabled}
-                        onChange={onPensionEnabled}
-                    />
-                    {pensionEnabled && (
-                        <>
-                            <SliderField
-                                label="Pension Start Age"
-                                value={pensionStartAge}
-                                onChange={onPensionStartAge}
-                                min={55}
-                                max={75}
-                                step={1}
-                            />
-                            <Field label="Pension Amount / mo">
-                                <NumberInput value={pensionMonthlyAmount} onChange={onPensionMonthlyAmount} step={10000} prefix="¥" min={0} />
-                            </Field>
-                            <Toggle
-                                label="Inflation-Adjusted"
-                                checked={pensionInflationAdjusted}
-                                onChange={onPensionInflationAdjusted}
-                            />
-                        </>
-                    )}
-                </div>
-            )}
 
             {/* ── Loans & Mortgages ── */}
             <SectionHeader title="Loans & Mortgages (optional)" />
