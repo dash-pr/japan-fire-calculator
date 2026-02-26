@@ -179,6 +179,9 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     pensionStartAge = 65,
     pensionMonthlyAmount = 0,
     pensionInflationAdjusted = true,
+    monthlyEmerigencySavings = 0,
+    emergencyFundTarget = 0,
+    allocationStrategy = 'optimal',
   } = input;
 
   const startYear = new Date().getFullYear();
@@ -227,6 +230,9 @@ export function runSimulation(input: SimulationInput): SimulationResult {
   let totalNisaGrowthContributed_    = 0;
   let totalTaxableContributed_       = 0;
 
+  // Emergency fund tracking
+  let emergencyFund = 0;
+
   // SWP amount locked in at FIRE date
   let swpMonthlyAtFire = 0;
   let juniorNisaInjected = false;
@@ -242,7 +248,8 @@ export function runSimulation(input: SimulationInput): SimulationResult {
 
   for (let m = 0; m < totalMonths; m++) {
     const ageDecimal  = currentAge + m / 12;
-    const year        = startYear + Math.floor(m / 12);
+    // Calendar-aligned year: accounts for starting month (e.g. starting in Feb means month 11 is Jan of next year)
+    const year        = startYear + Math.floor((calendarMonthStart - 1 + m) / 12);
     const monthInYear = ((calendarMonthStart - 1 + m) % 12) + 1;
     const isFired     = ageDecimal >= targetFireAge;
 
@@ -319,7 +326,22 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       netIncomeAfterExpenses - idecoAfterLoans + idecoTaxSavingActual - loanPayment
     );
 
-    let remainingSavings = disposableIncome - loanPayment;
+    // FIX: disposableIncome already subtracts loanPayment — do NOT subtract again
+    let remainingSavings = disposableIncome;
+
+    // ── Emergency fund savings (deducted before investment contributions) ──
+    let emergencyContrib = 0;
+    if (!isFired && monthlyEmerigencySavings > 0 && emergencyFundTarget > 0 && emergencyFund < emergencyFundTarget) {
+      emergencyContrib = Math.min(monthlyEmerigencySavings, emergencyFundTarget - emergencyFund, remainingSavings);
+      emergencyFund += emergencyContrib;
+      remainingSavings -= emergencyContrib;
+    }
+
+    // ── Per-month contribution tracking (set during actual allocation below) ──
+    let idecoCont_m = 0;
+    let nisaTsumCont_m = 0;
+    let nisaGrowCont_m = 0;
+    let taxableCont_m = 0;
 
     // ── Contributions (accumulation phase only) ───────────────────────────
     if (!isFired) {
@@ -327,16 +349,19 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       if (accounts.idecoEnabled && idecoAfterLoans > 0) {
         ideco += idecoAfterLoans;
         totalIdecoContributed_ += idecoAfterLoans;
+        idecoCont_m = idecoAfterLoans;
       }
 
-      // NISA — tsumitate slot first, then growth
+      // NISA — annual reset on January
       if (monthInYear === 1) { nisaTsumitateAnnualUsed = 0; nisaGrowthAnnualUsed = 0; }
 
-      // Tsumitate (if enabled)
-      if (accounts.nisaTsumitateEnabled && nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME) {
+      // Helper: allocate to NISA Tsumitate (respecting monthly, annual + lifetime limits)
+      const allocateNisaTsumitate = () => {
+        if (!accounts.nisaTsumitateEnabled || nisaTsumitateLifetimeUsed >= NISA_TSUMITATE_LIFETIME || remainingSavings <= 0) return;
         const space = Math.min(
-          NISA_TSUMITATE_ANNUAL  - nisaTsumitateAnnualUsed,
-          NISA_TSUMITATE_LIFETIME - nisaTsumitateLifetimeUsed,
+          NISA_TSUMITATE_ANNUAL / 12,                          // monthly cap: ¥100k
+          NISA_TSUMITATE_ANNUAL  - nisaTsumitateAnnualUsed,    // annual remaining
+          NISA_TSUMITATE_LIFETIME - nisaTsumitateLifetimeUsed, // lifetime remaining
           Math.max(0, remainingSavings)
         );
         if (space > 0) {
@@ -344,6 +369,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
           nisaTsumitateAnnualUsed    += space;
           nisaTsumitateLifetimeUsed  += space;
           totalNisaTsumitateContributed_ += space;
+          nisaTsumCont_m             += space;
           remainingSavings           -= space;
 
           if (nisaTsumitateLifetimeUsed >= NISA_TSUMITATE_LIFETIME && !nisaTsumitateExhaustionYear) {
@@ -351,13 +377,15 @@ export function runSimulation(input: SimulationInput): SimulationResult {
             nisaTsumitateExhaustionAge  = Math.round(ageDecimal);
           }
         }
-      }
+      };
 
-      // Growth slot (if enabled)
-      if (accounts.nisaGrowthEnabled && nisaGrowthLifetimeUsed < NISA_GROWTH_LIFETIME && remainingSavings > 0) {
+      // Helper: allocate to NISA Growth (respecting monthly, annual + lifetime limits)
+      const allocateNisaGrowth = () => {
+        if (!accounts.nisaGrowthEnabled || nisaGrowthLifetimeUsed >= NISA_GROWTH_LIFETIME || remainingSavings <= 0) return;
         const space = Math.min(
-          NISA_GROWTH_ANNUAL  - nisaGrowthAnnualUsed,
-          NISA_GROWTH_LIFETIME - nisaGrowthLifetimeUsed,
+          NISA_GROWTH_ANNUAL / 12,                           // monthly cap: ¥200k
+          NISA_GROWTH_ANNUAL  - nisaGrowthAnnualUsed,        // annual remaining
+          NISA_GROWTH_LIFETIME - nisaGrowthLifetimeUsed,     // lifetime remaining
           Math.max(0, remainingSavings)
         );
         if (space > 0) {
@@ -365,6 +393,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
           nisaGrowthAnnualUsed    += space;
           nisaGrowthLifetimeUsed  += space;
           totalNisaGrowthContributed_ += space;
+          nisaGrowCont_m          += space;
           remainingSavings        -= space;
 
           if (nisaGrowthLifetimeUsed >= NISA_GROWTH_LIFETIME && !nisaGrowthExhaustionYear) {
@@ -372,6 +401,51 @@ export function runSimulation(input: SimulationInput): SimulationResult {
             nisaGrowthExhaustionAge  = Math.round(ageDecimal);
           }
         }
+      };
+
+      // ── Allocation strategy determines order of NISA vs iDeCo filling ──
+      switch (allocationStrategy) {
+        case 'prioritizeNisa':
+          // Fill NISA slots first, then overflow to taxable
+          allocateNisaTsumitate();
+          allocateNisaGrowth();
+          break;
+        case 'prioritizeIdeco':
+          // iDeCo already contributed above; put remainder into NISA
+          allocateNisaTsumitate();
+          allocateNisaGrowth();
+          break;
+        case 'equalSplit': {
+          // Split remaining savings equally between available NISA slots
+          const nisaTEnabled = accounts.nisaTsumitateEnabled && nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME;
+          const nisaGEnabled = accounts.nisaGrowthEnabled && nisaGrowthLifetimeUsed < NISA_GROWTH_LIFETIME;
+          const slots = (nisaTEnabled ? 1 : 0) + (nisaGEnabled ? 1 : 0) + (accounts.taxableEnabled ? 1 : 0);
+          if (slots > 0) {
+            const share = remainingSavings / slots;
+            if (nisaTEnabled) {
+              const saved = remainingSavings;
+              remainingSavings = Math.min(remainingSavings, share);
+              allocateNisaTsumitate();
+              remainingSavings = saved - (saved === remainingSavings ? 0 : share - remainingSavings);
+              // Restore remaining for next slot
+              remainingSavings = Math.max(0, saved - nisaTsumCont_m);
+            }
+            if (nisaGEnabled) {
+              const maxForGrowth = Math.min(share, remainingSavings);
+              const saved = remainingSavings;
+              remainingSavings = maxForGrowth;
+              allocateNisaGrowth();
+              remainingSavings = Math.max(0, saved - nisaGrowCont_m);
+            }
+          }
+          break;
+        }
+        case 'optimal':
+        default:
+          // Default: tsumitate first, then growth (maximize tax-free space)
+          allocateNisaTsumitate();
+          allocateNisaGrowth();
+          break;
       }
 
       // Taxable remainder
@@ -379,6 +453,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
         taxable                   += remainingSavings;
         totalTaxableCostBasis     += remainingSavings;
         totalTaxableContributed_  += remainingSavings;
+        taxableCont_m              = remainingSavings;
       }
     }
 
@@ -490,26 +565,8 @@ export function runSimulation(input: SimulationInput): SimulationResult {
 
     const annualExpenses = (isFired ? baseExpense : currentMonthlyExpenses) * 12;
 
-    // Per-month contribution tracking for cash-flow tab
-    // Note: iDeCo may be reduced if loans impact available funds
-    const idecoCont_     = (!isFired && accounts.idecoEnabled) ? idecoAfterLoans : 0;
-    // Approximation: derive NISA + taxable contribs from running totals diff
-    // We snapshot running totals before/after — simpler to re-derive from logic above.
-    // For yearly rollup it's accurate enough since both in same iteration.
-    const nisaTsumMonthlyMax = NISA_TSUMITATE_ANNUAL / 12;
-    const nisaGrowthMonthlyMax = NISA_GROWTH_ANNUAL / 12;
-    const disposableForContrib = !isFired
-      ? Math.max(0, monthlyIncome - currentMonthlyExpenses - idecoCont_ + (idecoCont_ * INCOME_TAX_EFFECTIVE) - loanPayment)
-      : 0;
-    const nisaTsumCont_  = !isFired && accounts.nisaTsumitateEnabled
-      ? Math.min(nisaTsumMonthlyMax, nisaTsumitateLifetimeUsed < NISA_TSUMITATE_LIFETIME ? Math.max(0, disposableForContrib) : 0, disposableForContrib)
-      : 0;
-    const leftAfterNisaT = Math.max(0, disposableForContrib - nisaTsumCont_);
-    const nisaGrowCont_  = !isFired && accounts.nisaGrowthEnabled
-      ? Math.min(nisaGrowthMonthlyMax, leftAfterNisaT)
-      : 0;
-    const leftAfterNisa  = Math.max(0, leftAfterNisaT - nisaGrowCont_);
-    const taxableCont_   = !isFired && accounts.taxableEnabled ? leftAfterNisa : 0;
+    // Per-month contribution values come directly from the actual allocation above
+    // (idecoCont_m, nisaTsumCont_m, nisaGrowCont_m, taxableCont_m)
 
     // Post-FIRE side income (inflation-adjusted to current month)
     // Ends when FATFIRE is reached (or at postFireIncomeEndAge if specified)
@@ -546,10 +603,10 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       annualExpenses:  Math.round(annualExpenses),
       loanPayment:     Math.round(loanPayment),
       grossIncome:     Math.round(isFired ? 0 : monthlyIncome),
-      idecoCont:       Math.round(idecoCont_),
-      nisaTsumCont:    Math.round(nisaTsumCont_),
-      nisaGrowthCont:  Math.round(nisaGrowCont_),
-      taxableCont:     Math.round(taxableCont_),
+      idecoCont:       Math.round(idecoCont_m),
+      nisaTsumCont:    Math.round(nisaTsumCont_m),
+      nisaGrowthCont:  Math.round(nisaGrowCont_m),
+      taxableCont:     Math.round(taxableCont_m),
       postFireSideIncome: Math.round(postFireSideIncomeNow),
       pensionIncome:   Math.round(pensionMonthlyNow),
       postFatfireSideIncome: Math.round(postFatfireSideIncomeNow),
