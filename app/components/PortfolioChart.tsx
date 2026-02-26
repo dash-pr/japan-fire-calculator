@@ -160,12 +160,35 @@ export default function PortfolioChart({ result }: Props) {
         );
     }
 
+    // Calculate Y-axis domain based on visible data
+    const yAxisDomain = useMemo(() => {
+        if (!chartData || chartData.length === 0) return [0, "auto"];
+
+        let maxValue = 0;
+        let minValue = 0;
+
+        for (const item of chartData) {
+            if (visibility.total) maxValue = Math.max(maxValue, item.portfolio ?? 0);
+            if (visibility.ideco) maxValue = Math.max(maxValue, item.ideco ?? 0);
+            if (visibility.nisaTsumitate) maxValue = Math.max(maxValue, item.nisaTsumitate ?? 0);
+            if (visibility.nisaGrowth) maxValue = Math.max(maxValue, item.nisaGrowth ?? 0);
+            if (visibility.taxable) maxValue = Math.max(maxValue, item.taxable ?? 0);
+            if (visibility.spending) maxValue = Math.max(maxValue, item.spending ?? 0);
+            if (visibility.swp) maxValue = Math.max(maxValue, item.swp ?? 0);
+            if (visibility.fireLines) maxValue = Math.max(maxValue, item.required ?? 0);
+        }
+
+        // Add 10% padding to the top
+        const paddedMax = maxValue * 1.1;
+        return [0, Math.ceil(paddedMax)];
+    }, [chartData, visibility]);
+
     const leanYear = result.leanFireYear?.toString();
     const fatYear = result.fatFireYear?.toString();
     const depletionYear = result.portfolioDepletionYear?.toString();
 
     // Toggle button component
-    const ToggleButton = ({ label, color, checked }: { label: string; color: string; checked: boolean }) => (
+    const ToggleButton = ({ label, color, checked, stateKey }: { label: string; color: string; checked: boolean; stateKey: keyof VisibilityState }) => (
         <label
             style={{
                 display: "flex",
@@ -180,8 +203,7 @@ export default function PortfolioChart({ result }: Props) {
                 type="checkbox"
                 checked={checked}
                 onChange={(e) => {
-                    const key = label.toLowerCase().replace(/[\s\/]/g, "") as keyof VisibilityState;
-                    setVisibility((prev) => ({ ...prev, [key]: e.target.checked }));
+                    setVisibility((prev) => ({ ...prev, [stateKey]: e.target.checked }));
                 }}
                 style={{
                     cursor: "pointer",
@@ -295,15 +317,15 @@ export default function PortfolioChart({ result }: Props) {
                     fontSize: 9,
                 }}
             >
-                <ToggleButton label="Total Portfolio" color={COLORS.total.stroke} checked={visibility.total} />
-                <ToggleButton label="iDeCo" color={COLORS.ideco.stroke} checked={visibility.ideco} />
-                <ToggleButton label="NISA Tsumitate" color={COLORS.nisaTsumitate.stroke} checked={visibility.nisaTsumitate} />
-                <ToggleButton label="NISA Growth" color={COLORS.nisaGrowth.stroke} checked={visibility.nisaGrowth} />
-                <ToggleButton label="Taxable" color={COLORS.taxable.stroke} checked={visibility.taxable} />
+                <ToggleButton label="Total Portfolio" color={COLORS.total.stroke} checked={visibility.total} stateKey="total" />
+                <ToggleButton label="iDeCo" color={COLORS.ideco.stroke} checked={visibility.ideco} stateKey="ideco" />
+                <ToggleButton label="NISA Tsumitate" color={COLORS.nisaTsumitate.stroke} checked={visibility.nisaTsumitate} stateKey="nisaTsumitate" />
+                <ToggleButton label="NISA Growth" color={COLORS.nisaGrowth.stroke} checked={visibility.nisaGrowth} stateKey="nisaGrowth" />
+                <ToggleButton label="Taxable" color={COLORS.taxable.stroke} checked={visibility.taxable} stateKey="taxable" />
                 <div style={{ marginLeft: "auto" }} />
-                <ToggleButton label="Spending" color={COLORS.spending.stroke} checked={visibility.spending} />
-                <ToggleButton label="Max SWP" color={COLORS.swp.stroke} checked={visibility.swp} />
-                <ToggleButton label="FIRE Lines" color="#CC0000" checked={visibility.fireLines} />
+                <ToggleButton label="Spending" color={COLORS.spending.stroke} checked={visibility.spending} stateKey="spending" />
+                <ToggleButton label="Max SWP" color={COLORS.swp.stroke} checked={visibility.swp} stateKey="swp" />
+                <ToggleButton label="FIRE Lines" color="#CC0000" checked={visibility.fireLines} stateKey="fireLines" />
             </div>
 
             <ResponsiveContainer width="100%" height={360}>
@@ -335,6 +357,7 @@ export default function PortfolioChart({ result }: Props) {
                         interval="preserveStartEnd"
                     />
                     <YAxis
+                        domain={yAxisDomain as [number, number]}
                         tickFormatter={formatYenAxis}
                         tick={{ fill: "#737373", fontSize: 10, fontFamily: "'JetBrains Mono', monospace" }}
                         tickLine={false}
@@ -413,7 +436,6 @@ export default function PortfolioChart({ result }: Props) {
                             dataKey="spending"
                             stroke={COLORS.spending.stroke}
                             strokeWidth={2}
-                            strokeDasharray="4 4"
                             fill="none"
                             name="Annual Spending"
                             dot={false}
@@ -427,7 +449,6 @@ export default function PortfolioChart({ result }: Props) {
                             dataKey="swp"
                             stroke={COLORS.swp.stroke}
                             strokeWidth={2}
-                            strokeDasharray="3 3"
                             fill="none"
                             name="Max SWP"
                             dot={false}
