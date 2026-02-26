@@ -74,6 +74,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setPensionMonthlyAmount,
     pensionInflationAdjusted,
     setPensionInflationAdjusted,
+    monthlyEmerigencySavings,
+    setMonthlyEmerigencySavings,
+    emergencyFundTarget,
+    setEmergencyFundTarget,
+    allocationStrategy,
+    setAllocationStrategy,
     validationErrors,
     simulationError,
   } = useSimulator();
@@ -348,6 +354,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onInitialNisaGrowthBalance={setInitialNisaGrowthBalance}
               initialTaxableBalance={initialTaxableBalance}
               onInitialTaxableBalance={setInitialTaxableBalance}
+              monthlyEmerigencySavings={monthlyEmerigencySavings}
+              onMonthlyEmerigencySavings={setMonthlyEmerigencySavings}
+              emergencyFundTarget={emergencyFundTarget}
+              onEmergencyFundTarget={setEmergencyFundTarget}
+              allocationStrategy={allocationStrategy}
+              onAllocationStrategy={setAllocationStrategy}
             />
           </div>
         </aside>

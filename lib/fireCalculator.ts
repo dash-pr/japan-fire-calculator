@@ -63,6 +63,11 @@ export interface SimulationInput {
   initialNisaTsumitateBalance?: number; // yen — current NISA tsumitate balance
   initialNisaGrowthBalance?: number;    // yen — current NISA growth balance
   initialTaxableBalance?: number;       // yen — current taxable brokerage balance
+  // Cash/Emergency Fund (optional)
+  monthlyEmerigencySavings?: number; // yen to save as cash each month (stops when target reached)
+  emergencyFundTarget?: number; // target emergency fund size in yen
+  // Investment Allocation Strategy (optional)
+  allocationStrategy?: 'optimal' | 'prioritizeNisa' | 'prioritizeIdeco' | 'equalSplit'; // contribution allocation strategy
 }
 
 export interface MonthlySnapshot {

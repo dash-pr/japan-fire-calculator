@@ -186,5 +186,29 @@ export function validateSimulationInput(
     }
   }
 
+  // Validate emergency fund savings
+  if ((input.monthlyEmerigencySavings ?? 0) < 0) {
+    errors.push({
+      field: "monthlyEmerigencySavings",
+      message: "Monthly emergency savings cannot be negative",
+    });
+  }
+
+  if ((input.emergencyFundTarget ?? 0) < 0) {
+    errors.push({
+      field: "emergencyFundTarget",
+      message: "Emergency fund target cannot be negative",
+    });
+  }
+
+  // Check if emergency fund savings exceed disposable income
+  const disposableIncome = input.currentMonthlyIncome - input.monthlyExpenses;
+  if ((input.monthlyEmerigencySavings ?? 0) > disposableIncome) {
+    errors.push({
+      field: "monthlyEmerigencySavings",
+      message: `Monthly emergency savings (¥${input.monthlyEmerigencySavings?.toLocaleString()}) cannot exceed disposable income (¥${Math.max(0, disposableIncome).toLocaleString()})`,
+    });
+  }
+
   return errors;
 }

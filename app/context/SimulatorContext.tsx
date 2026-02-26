@@ -45,6 +45,9 @@ const DEFAULT_INPUT: SimulationInput = {
   pensionStartAge: 65,
   pensionMonthlyAmount: 0,
   pensionInflationAdjusted: true,
+  monthlyEmerigencySavings: 0,
+  emergencyFundTarget: 0,
+  allocationStrategy: 'optimal',
 };
 
 // ── Custom Hooks ──────────────────────────────────────────────────────────────
@@ -142,6 +145,12 @@ export interface SimulatorContextValue {
   setPensionMonthlyAmount: (v: number) => void;
   pensionInflationAdjusted: boolean;
   setPensionInflationAdjusted: (v: boolean) => void;
+  monthlyEmerigencySavings: number;
+  setMonthlyEmerigencySavings: (v: number) => void;
+  emergencyFundTarget: number;
+  setEmergencyFundTarget: (v: number) => void;
+  allocationStrategy: 'optimal' | 'prioritizeNisa' | 'prioritizeIdeco' | 'equalSplit';
+  setAllocationStrategy: (v: 'optimal' | 'prioritizeNisa' | 'prioritizeIdeco' | 'equalSplit') => void;
   result: SimulationResult | null;
   validationErrors: ValidationError[];
   simulationError: string | null;
@@ -276,6 +285,18 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     "fire-pensionInflationAdjusted",
     DEFAULT_INPUT.pensionInflationAdjusted ?? true
   );
+  const [monthlyEmerigencySavings, setMonthlyEmerigencySavings] = useLocalStorage(
+    "fire-monthlyEmerigencySavings",
+    DEFAULT_INPUT.monthlyEmerigencySavings ?? 0
+  );
+  const [emergencyFundTarget, setEmergencyFundTarget] = useLocalStorage(
+    "fire-emergencyFundTarget",
+    DEFAULT_INPUT.emergencyFundTarget ?? 0
+  );
+  const [allocationStrategy, setAllocationStrategy] = useLocalStorage<'optimal' | 'prioritizeNisa' | 'prioritizeIdeco' | 'equalSplit'>(
+    "fire-allocationStrategy",
+    DEFAULT_INPUT.allocationStrategy ?? 'optimal'
+  );
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [simulationError, setSimulationError] = useState<string | null>(null);
@@ -307,6 +328,9 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     pensionStartAge,
     pensionMonthlyAmount,
     pensionInflationAdjusted,
+    monthlyEmerigencySavings,
+    emergencyFundTarget,
+    allocationStrategy,
   };
 
   const debouncedInput = useDebounced(input, 150);
@@ -361,6 +385,9 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         pensionStartAge, setPensionStartAge,
         pensionMonthlyAmount, setPensionMonthlyAmount,
         pensionInflationAdjusted, setPensionInflationAdjusted,
+        monthlyEmerigencySavings, setMonthlyEmerigencySavings,
+        emergencyFundTarget, setEmergencyFundTarget,
+        allocationStrategy, setAllocationStrategy,
         result,
         validationErrors,
         simulationError,

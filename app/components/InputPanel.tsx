@@ -66,6 +66,14 @@ interface Props {
     onInitialNisaGrowthBalance: (v: number) => void;
     initialTaxableBalance: number;
     onInitialTaxableBalance: (v: number) => void;
+    // Cash/Emergency Fund
+    monthlyEmerigencySavings: number;
+    onMonthlyEmerigencySavings: (v: number) => void;
+    emergencyFundTarget: number;
+    onEmergencyFundTarget: (v: number) => void;
+    // Investment Allocation
+    allocationStrategy: 'optimal' | 'prioritizeNisa' | 'prioritizeIdeco' | 'equalSplit';
+    onAllocationStrategy: (v: 'optimal' | 'prioritizeNisa' | 'prioritizeIdeco' | 'equalSplit') => void;
 }
 
 /* ─── Info tooltip ──────────────────────────────────────────────────────────────────────────── */
@@ -443,6 +451,12 @@ export default function InputPanel({
     onInitialNisaGrowthBalance,
     initialTaxableBalance,
     onInitialTaxableBalance,
+    monthlyEmerigencySavings,
+    onMonthlyEmerigencySavings,
+    emergencyFundTarget,
+    onEmergencyFundTarget,
+    allocationStrategy,
+    onAllocationStrategy,
 }: Props) {
     const [showFunds, setShowFunds] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -758,6 +772,112 @@ export default function InputPanel({
                         <div>
                             <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Ends at Age</label>
                             <NumberInput value={postFatfireIncomeEndAge} onChange={onPostFatfireIncomeEndAge} step={1} min={0} max={120} />
+                        </div>
+                    </div>
+
+                    {/* ── Cash / Emergency Fund Section ── */}
+                    <div
+                        style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            padding: "12px 12px",
+                            marginBottom: 12,
+                            borderRadius: "2px",
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontFamily: "'JetBrains Mono', monospace",
+                                fontSize: 10,
+                                fontWeight: 600,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                color: "#F9F9F7",
+                                marginBottom: 10,
+                            }}
+                        >
+                            Cash / Emergency Fund
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                            <div>
+                                <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Save per month</label>
+                                <NumberInput value={monthlyEmerigencySavings} onChange={onMonthlyEmerigencySavings} step={10000} prefix="¥" min={0} />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Target amount</label>
+                                <NumberInput value={emergencyFundTarget} onChange={onEmergencyFundTarget} step={100000} prefix="¥" min={0} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Investment Allocation Strategy ── */}
+                    <div
+                        style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            padding: "12px 12px",
+                            marginBottom: 12,
+                            borderRadius: "2px",
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontFamily: "'JetBrains Mono', monospace",
+                                fontSize: 10,
+                                fontWeight: 600,
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                color: "#F9F9F7",
+                                marginBottom: 10,
+                            }}
+                        >
+                            Investment Allocation Strategy
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                                <input
+                                    type="radio"
+                                    name="allocation"
+                                    checked={allocationStrategy === "optimal"}
+                                    onChange={() => onAllocationStrategy("optimal")}
+                                    style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                />
+                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Optimal — Maximize tax efficiency</span>
+                            </label>
+                            {(accounts.idecoEnabled || accounts.nisaTsumitateEnabled || accounts.nisaGrowthEnabled) && (
+                                <>
+                                    <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                                        <input
+                                            type="radio"
+                                            name="allocation"
+                                            checked={allocationStrategy === "prioritizeNisa"}
+                                            onChange={() => onAllocationStrategy("prioritizeNisa")}
+                                            style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                        />
+                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Prioritize NISA — Fill NISA first</span>
+                                    </label>
+                                    <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                                        <input
+                                            type="radio"
+                                            name="allocation"
+                                            checked={allocationStrategy === "prioritizeIdeco"}
+                                            onChange={() => onAllocationStrategy("prioritizeIdeco")}
+                                            style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                        />
+                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Prioritize iDeCo — Fill iDeCo first</span>
+                                    </label>
+                                    <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                                        <input
+                                            type="radio"
+                                            name="allocation"
+                                            checked={allocationStrategy === "equalSplit"}
+                                            onChange={() => onAllocationStrategy("equalSplit")}
+                                            style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                        />
+                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Equal Split — Divide equally</span>
+                                    </label>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
