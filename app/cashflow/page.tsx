@@ -611,7 +611,7 @@ export default function CashFlowPage() {
                   ? s.swpWithdrawal + s.postFireSideIncome - s.loanPayment
                   : s.grossIncome - s.loanPayment - idecoActualCost - s.nisaTsumCont - s.nisaGrowthCont - s.taxableCont;
 
-                const isDeficit = netDelta < 0;
+                const isDeficit = isRetired && netDelta < -10_000;
 
                 return (
                   <tr
