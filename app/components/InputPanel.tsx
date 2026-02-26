@@ -42,6 +42,14 @@ interface Props {
     onLifestyleInflation: (v: number) => void;
     postFatfireMonthlyIncome: number;
     onPostFatfireMonthlyIncome: (v: number) => void;
+    pensionEnabled: boolean;
+    onPensionEnabled: (v: boolean) => void;
+    pensionStartAge: number;
+    onPensionStartAge: (v: number) => void;
+    pensionMonthlyAmount: number;
+    onPensionMonthlyAmount: (v: number) => void;
+    pensionInflationAdjusted: boolean;
+    onPensionInflationAdjusted: (v: boolean) => void;
     // Loans & mortgages
     loans: Loan[];
     onLoans: (v: Loan[]) => void;
@@ -361,6 +369,14 @@ export default function InputPanel({
     onLifestyleInflation,
     postFatfireMonthlyIncome,
     onPostFatfireMonthlyIncome,
+    pensionEnabled,
+    onPensionEnabled,
+    pensionStartAge,
+    onPensionStartAge,
+    pensionMonthlyAmount,
+    onPensionMonthlyAmount,
+    pensionInflationAdjusted,
+    onPensionInflationAdjusted,
     loans,
     onLoans,
     initialIdecoBalance,
@@ -611,6 +627,31 @@ export default function InputPanel({
                     >
                         <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
                     </Field>
+                    <Toggle
+                        label="Pension / Social Security"
+                        checked={pensionEnabled}
+                        onChange={onPensionEnabled}
+                    />
+                    {pensionEnabled && (
+                        <>
+                            <SliderField
+                                label="Pension Start Age"
+                                value={pensionStartAge}
+                                onChange={onPensionStartAge}
+                                min={55}
+                                max={75}
+                                step={1}
+                            />
+                            <Field label="Pension Amount / mo">
+                                <NumberInput value={pensionMonthlyAmount} onChange={onPensionMonthlyAmount} step={10000} prefix="¥" min={0} />
+                            </Field>
+                            <Toggle
+                                label="Inflation-Adjusted"
+                                checked={pensionInflationAdjusted}
+                                onChange={onPensionInflationAdjusted}
+                            />
+                        </>
+                    )}
                 </div>
             )}
 

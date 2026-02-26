@@ -39,6 +39,10 @@ const DEFAULT_INPUT: SimulationInput = {
   initialNisaTsumitateBalance: 0,
   initialNisaGrowthBalance: 0,
   initialTaxableBalance: 0,
+  pensionEnabled: false,
+  pensionStartAge: 65,
+  pensionMonthlyAmount: 0,
+  pensionInflationAdjusted: true,
 };
 
 // ── Custom Hooks ──────────────────────────────────────────────────────────────
@@ -124,6 +128,14 @@ export interface SimulatorContextValue {
   setInitialNisaGrowthBalance: (v: number) => void;
   initialTaxableBalance: number;
   setInitialTaxableBalance: (v: number) => void;
+  pensionEnabled: boolean;
+  setPensionEnabled: (v: boolean) => void;
+  pensionStartAge: number;
+  setPensionStartAge: (v: number) => void;
+  pensionMonthlyAmount: number;
+  setPensionMonthlyAmount: (v: number) => void;
+  pensionInflationAdjusted: boolean;
+  setPensionInflationAdjusted: (v: boolean) => void;
   result: SimulationResult | null;
   validationErrors: ValidationError[];
   simulationError: string | null;
@@ -234,6 +246,22 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     "fire-initialTaxableBalance",
     DEFAULT_INPUT.initialTaxableBalance ?? 0
   );
+  const [pensionEnabled, setPensionEnabled] = useLocalStorage(
+    "fire-pensionEnabled",
+    DEFAULT_INPUT.pensionEnabled ?? false
+  );
+  const [pensionStartAge, setPensionStartAge] = useLocalStorage(
+    "fire-pensionStartAge",
+    DEFAULT_INPUT.pensionStartAge ?? 65
+  );
+  const [pensionMonthlyAmount, setPensionMonthlyAmount] = useLocalStorage(
+    "fire-pensionMonthlyAmount",
+    DEFAULT_INPUT.pensionMonthlyAmount ?? 0
+  );
+  const [pensionInflationAdjusted, setPensionInflationAdjusted] = useLocalStorage(
+    "fire-pensionInflationAdjusted",
+    DEFAULT_INPUT.pensionInflationAdjusted ?? true
+  );
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [simulationError, setSimulationError] = useState<string | null>(null);
@@ -259,6 +287,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     initialNisaTsumitateBalance,
     initialNisaGrowthBalance,
     initialTaxableBalance,
+    pensionEnabled,
+    pensionStartAge,
+    pensionMonthlyAmount,
+    pensionInflationAdjusted,
   };
 
   const debouncedInput = useDebounced(input, 150);
@@ -307,6 +339,10 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         initialNisaTsumitateBalance, setInitialNisaTsumitateBalance,
         initialNisaGrowthBalance, setInitialNisaGrowthBalance,
         initialTaxableBalance, setInitialTaxableBalance,
+        pensionEnabled, setPensionEnabled,
+        pensionStartAge, setPensionStartAge,
+        pensionMonthlyAmount, setPensionMonthlyAmount,
+        pensionInflationAdjusted, setPensionInflationAdjusted,
         result,
         validationErrors,
         simulationError,

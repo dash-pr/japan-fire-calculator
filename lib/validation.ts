@@ -164,5 +164,27 @@ export function validateSimulationInput(
     });
   }
 
+  // Validate pension
+  if (input.pensionEnabled) {
+    if ((input.pensionStartAge ?? 65) < input.currentAge) {
+      errors.push({
+        field: "pensionStartAge",
+        message: "Pension start age must be >= current age",
+      });
+    }
+    if ((input.pensionStartAge ?? 65) > 100) {
+      errors.push({
+        field: "pensionStartAge",
+        message: "Pension start age must be <= 100",
+      });
+    }
+    if ((input.pensionMonthlyAmount ?? 0) < 0) {
+      errors.push({
+        field: "pensionMonthlyAmount",
+        message: "Pension amount cannot be negative",
+      });
+    }
+  }
+
   return errors;
 }

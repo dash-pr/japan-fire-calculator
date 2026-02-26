@@ -62,6 +62,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setInitialNisaGrowthBalance,
     initialTaxableBalance,
     setInitialTaxableBalance,
+    pensionEnabled,
+    setPensionEnabled,
+    pensionStartAge,
+    setPensionStartAge,
+    pensionMonthlyAmount,
+    setPensionMonthlyAmount,
+    pensionInflationAdjusted,
+    setPensionInflationAdjusted,
     validationErrors,
     simulationError,
   } = useSimulator();
@@ -314,6 +322,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onLifestyleInflation={setLifestyleInflation}
               postFatfireMonthlyIncome={postFatfireMonthlyIncome}
               onPostFatfireMonthlyIncome={setPostFatfireMonthlyIncome}
+              pensionEnabled={pensionEnabled}
+              onPensionEnabled={setPensionEnabled}
+              pensionStartAge={pensionStartAge}
+              onPensionStartAge={setPensionStartAge}
+              pensionMonthlyAmount={pensionMonthlyAmount}
+              onPensionMonthlyAmount={setPensionMonthlyAmount}
+              pensionInflationAdjusted={pensionInflationAdjusted}
+              onPensionInflationAdjusted={setPensionInflationAdjusted}
               loans={loans}
               onLoans={setLoans}
               initialIdecoBalance={initialIdecoBalance}

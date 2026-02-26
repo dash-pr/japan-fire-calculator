@@ -51,6 +51,11 @@ export interface SimulationInput {
   juniorNisaBalance: number;      // yen — lump-sum added at FIRE date
   annualReturn: number;           // % e.g. 6
   swpDepletionAge?: number;       // age by which portfolio reaches 0 (default LIFE_EXPECTANCY)
+  // Pension/Social Security (optional)
+  pensionEnabled?: boolean;       // whether to include pension income
+  pensionStartAge?: number;       // age when pension starts (typically 60-70)
+  pensionMonthlyAmount?: number;  // yen/month in today's money
+  pensionInflationAdjusted?: boolean; // whether pension adjusts for inflation
   // Current portfolio balances (optional)
   initialIdecoBalance?: number;   // yen — current iDeCo balance
   initialNisaTsumitateBalance?: number; // yen — current NISA tsumitate balance
@@ -83,6 +88,7 @@ export interface MonthlySnapshot {
   taxableCont: number;       // taxable brokerage contribution
   postFireSideIncome: number;// extra income in retirement (postFireMonthlyIncome, inflation-adj)
   postFatfireSideIncome: number; // extra income after FATFIRE achieved (inflation-adj)
+  pensionIncome: number;     // pension/social security income (inflation-adj if enabled)
 }
 
 export interface SimulationResult {
@@ -160,6 +166,10 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     initialNisaTsumitateBalance = 0,
     initialNisaGrowthBalance = 0,
     initialTaxableBalance = 0,
+    pensionEnabled = false,
+    pensionStartAge = 65,
+    pensionMonthlyAmount = 0,
+    pensionInflationAdjusted = true,
   } = input;
 
   const startYear = new Date().getFullYear();
@@ -268,14 +278,23 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       juniorNisaInjected = true;
     }
 
+    // ── Pension/Social Security income ───────────────────────────────────────
+    const pensionMonthlyNow = pensionEnabled && ageDecimal >= (pensionStartAge ?? 65)
+      ? (pensionMonthlyAmount ?? 0) * (pensionInflationAdjusted
+          ? Math.pow(1 + monthlyInflation, m)
+          : 1)
+      : 0;
+
     // Expenses for this month (use postFire amount during retirement)
     // Accounts for both inflation and lifestyle inflation during retirement
     // Also includes any ongoing loan payments during retirement
+    // Reduced by pension income (net expenses after pension)
     const baseExpense = isFired
-      ? postFireMonthlyExpenses
+      ? Math.max(0, postFireMonthlyExpenses
           * Math.pow(1 + monthlyInflation, (targetFireAge - currentAge) * 12 + (m - Math.round((targetFireAge - currentAge) * 12)))
           * Math.pow(1 + monthlyLifestyleInflation, m - Math.round((targetFireAge - currentAge) * 12))
           + loanPayment
+          - pensionMonthlyNow)
       : currentMonthlyExpenses;
 
     // ── Disposable income (accumulation only) ────────────────────────────
@@ -521,6 +540,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
       nisaGrowthCont:  Math.round(nisaGrowCont_),
       taxableCont:     Math.round(taxableCont_),
       postFireSideIncome: Math.round(postFireSideIncomeNow),
+      pensionIncome:   Math.round(pensionMonthlyNow),
       postFatfireSideIncome: Math.round(postFatfireSideIncomeNow),
     });
   }
