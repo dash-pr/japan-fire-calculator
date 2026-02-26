@@ -248,6 +248,7 @@ function CollapsibleSection({
                     fontWeight: 700,
                     letterSpacing: "0.22em",
                     textTransform: "uppercase",
+                    textAlign: "left",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
