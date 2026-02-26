@@ -468,7 +468,7 @@ export default function InputPanel({
     const [showPortfolio, setShowPortfolio] = useState(false);
     const [showLoans, setShowLoans] = useState(false);
     const [showInvestmentAllocation, setShowInvestmentAllocation] = useState(false);
-    const [newLoan, setNewLoan] = useState({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360 });
+    const [newLoan, setNewLoan] = useState({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360, startAge: currentAge });
 
     const addLoan = () => {
         if (!newLoan.label.trim() || newLoan.principal <= 0 || newLoan.remainingMonths <= 0) return;
@@ -476,7 +476,7 @@ export default function InputPanel({
             ...loans,
             { ...newLoan, id: String(Date.now()) },
         ]);
-        setNewLoan({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360 });
+        setNewLoan({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360, startAge: currentAge });
     };
 
     const removeLoan = (id: string) =>
@@ -751,7 +751,7 @@ export default function InputPanel({
                         )}
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-end" }}>
                         <div>
                             <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FIRE Side Income / mo</label>
                             <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
@@ -771,7 +771,7 @@ export default function InputPanel({
                         format={fmtPct}
                         info="Annual increase in post-fire expenses beyond inflation. E.g., traveling more as you retire."
                     />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-end" }}>
                         <div>
                             <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FATFIRE Side Income / mo</label>
                             <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
@@ -959,7 +959,7 @@ export default function InputPanel({
                                         color: "rgba(255,255,255,0.75)",
                                     }}
                                 >
-                                    {formatYen(loan.principal)} · {loan.annualInterestRate}% · {yearsRemaining}yr (~{formatYen(Math.round(monthlyPayment))}/mo)
+                                    {formatYen(loan.principal)} · {loan.annualInterestRate}% · {yearsRemaining}yr{loan.startAge && loan.startAge > currentAge ? ` · from age ${loan.startAge}` : ""} (~{formatYen(Math.round(monthlyPayment))}/mo)
                                 </div>
                             </div>
                             <button
@@ -1030,13 +1030,23 @@ export default function InputPanel({
                             />
                         </div>
                     </div>
-                    <div>
-                        <label style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Term (years)</label>
-                        <NumberInput
-                            value={newLoan.remainingMonths / 12}
-                            onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: Math.round(v * 12) }))}
-                            min={1} max={50} step={1} suffix=" years"
-                        />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                        <div>
+                            <label style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Term (years)</label>
+                            <NumberInput
+                                value={newLoan.remainingMonths / 12}
+                                onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: Math.round(v * 12) }))}
+                                min={1} max={50} step={1} suffix=" years"
+                            />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Start Age</label>
+                            <NumberInput
+                                value={newLoan.startAge}
+                                onChange={(v) => setNewLoan((l) => ({ ...l, startAge: v }))}
+                                min={currentAge} max={80} step={1}
+                            />
+                        </div>
                     </div>
                     <button
                         onClick={addLoan}

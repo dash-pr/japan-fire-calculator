@@ -20,6 +20,7 @@ export interface Loan {
   principal: number;        // yen — remaining balance
   annualInterestRate: number; // % e.g. 2.5 for mortgage, 5 for car loan
   remainingMonths: number;  // months until loan is paid off
+  startAge?: number;        // age when loan payments begin (default: starts immediately)
 }
 
 export interface AccountToggles {
@@ -238,9 +239,10 @@ export function runSimulation(input: SimulationInput): SimulationResult {
   let juniorNisaInjected = false;
 
   // ── Loan tracking (mutable copy of input loans) ──────────────────────────
-  const loanStates: Array<{ principal: number; remainingMonths: number }> = loans.map(l => ({
+  const loanStates: Array<{ principal: number; remainingMonths: number; startAge: number }> = loans.map(l => ({
     principal: l.principal,
     remainingMonths: l.remainingMonths,
+    startAge: l.startAge ?? currentAge, // default: starts immediately
   }));
 
   const totalMonths = (LIFE_EXPECTANCY - currentAge) * 12;
@@ -263,6 +265,8 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     // Calculate total loan payment for this month and reduce principal
     for (let loanIdx = 0; loanIdx < loanStates.length; loanIdx++) {
       const loanState = loanStates[loanIdx];
+      // Skip loans that haven't started yet
+      if (ageDecimal < loanState.startAge) continue;
       if (loanState.remainingMonths > 0) {
         const loanDef = loans[loanIdx];
         const monthlyRate = loanDef.annualInterestRate / 100 / 12;

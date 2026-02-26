@@ -47,35 +47,47 @@ const COLUMNS: { label: string; tip: string }[] = [
 
 // ── Tooltip component for column headers ────────────────────────────────────
 function InfoTip({ text }: { text: string }) {
+  const ref = React.useRef<HTMLSpanElement>(null);
   const [show, setShow] = React.useState(false);
+  const [pos, setPos] = React.useState({ top: 0, left: 0 });
+
+  const handleEnter = () => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 4, left: Math.max(8, rect.left - 80) });
+    }
+    setShow(true);
+  };
+
   return (
     <span
-      style={{ position: "relative", cursor: "help", marginLeft: 3 }}
-      onMouseEnter={() => setShow(true)}
+      ref={ref}
+      style={{ cursor: "help", marginLeft: 4, display: "inline-block" }}
+      onMouseEnter={handleEnter}
       onMouseLeave={() => setShow(false)}
     >
-      <span style={{ opacity: 0.5, fontSize: 7 }}>ⓘ</span>
+      <span style={{ opacity: 0.7, fontSize: 9 }}>ⓘ</span>
       {show && (
         <span
           style={{
-            position: "absolute",
-            bottom: "calc(100% + 6px)",
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#111",
+            position: "fixed",
+            top: pos.top,
+            left: pos.left,
+            zIndex: 9999,
+            background: "#1a1a1a",
             color: "#F9F9F7",
-            padding: "7px 10px",
-            borderRadius: 3,
-            fontSize: 10,
+            padding: "8px 12px",
+            borderRadius: 4,
+            fontSize: 11,
             fontWeight: 400,
             letterSpacing: "0.02em",
             textTransform: "none",
             whiteSpace: "normal",
-            width: 200,
+            width: 220,
             lineHeight: 1.5,
-            zIndex: 10,
-            border: "1px solid rgba(255,255,255,0.15)",
+            border: "1px solid rgba(255,255,255,0.2)",
             pointerEvents: "none",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
           }}
         >
           {text}
@@ -580,11 +592,11 @@ export default function CashFlowPage() {
                   <th
                     key={col.label}
                     style={{
-                      padding: "7px 12px",
+                      padding: "8px 14px",
                       textAlign: "right",
                       fontWeight: 700,
-                      color: "rgba(255,255,255,0.5)",
-                      letterSpacing: "0.12em",
+                      color: "rgba(255,255,255,0.8)",
+                      letterSpacing: "0.14em",
                       fontSize: 9,
                       textTransform: "uppercase",
                       whiteSpace: "nowrap",
