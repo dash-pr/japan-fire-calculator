@@ -250,6 +250,112 @@ export default function DocsPage() {
           </ul>
         </section>
 
+        {/* Tax & Constraint Handling */}
+        <section style={{ marginBottom: 36 }}>
+          <h2
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 24,
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
+              color: "var(--ink)",
+              marginBottom: 12,
+              marginTop: 0,
+            }}
+          >
+            Tax Handling & Constraints
+          </h2>
+
+          <h3
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--ink)",
+              marginTop: 18,
+              marginBottom: 8,
+            }}
+          >
+            Withdrawal Phase Tax Treatment
+          </h3>
+          <p style={{ color: "var(--n600)", lineHeight: 1.7 }}>
+            During retirement, the SWP calculation is <strong>tax-optimized</strong>:
+          </p>
+          <ul style={{ color: "var(--n600)", lineHeight: 1.8, paddingLeft: 24, margin: "0 0 12px 0" }}>
+            <li><strong>Taxable accounts first:</strong> Withdrawn first because they have the highest tax burden (~20% capital gains tax). The calculator accounts for gains and computes net proceeds after tax.</li>
+            <li><strong>NISA growth & tsumitate next:</strong> Tax-free withdrawals (no capital gains tax). Reduces tax burden significantly.</li>
+            <li><strong>iDeCo last (age 60+):</strong> Taxed at ~10% on withdrawal. Accessed only if other accounts depleted.</li>
+            <li><strong>Net SWP amount:</strong> The displayed withdrawal amount is already adjusted for tax impact—it's the net amount you actually receive, not the pre-tax amount.</li>
+          </ul>
+
+          <h3
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--ink)",
+              marginTop: 18,
+              marginBottom: 8,
+            }}
+          >
+            Accumulation Phase Tax Treatment
+          </h3>
+          <ul style={{ color: "var(--n600)", lineHeight: 1.8, paddingLeft: 24, margin: "0 0 12px 0" }}>
+            <li><strong>iDeCo income tax deduction:</strong> Contributions receive ~20% income tax benefit (freelancer rate). This reduces taxable income, effectively reducing required contributions.</li>
+            <li><strong>iDeCo withdrawal tax:</strong> On retirement, iDeCo withdrawals face ~10% withdrawal tax (with retirement income deduction benefit factored in).</li>
+            <li><strong>NISA tax-free growth:</strong> All dividends and capital gains in NISA accounts are completely tax-free—no annual or lifetime tax reporting.</li>
+            <li><strong>Taxable account gains:</strong> Not tracked during accumulation; calculated as needed during withdrawal phase based on contribution history vs. current value.</li>
+          </ul>
+
+          <h3
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--ink)",
+              marginTop: 18,
+              marginBottom: 8,
+            }}
+          >
+            Investment Constraints
+          </h3>
+          <ul style={{ color: "var(--n600)", lineHeight: 1.8, paddingLeft: 24, margin: "0 0 12px 0" }}>
+            <li><strong>Monthly savings limit:</strong> Total monthly contributions (iDeCo + NISA + taxable) cannot exceed disposable income (income − expenses − loans).</li>
+            <li><strong>Emergency fund limit:</strong> Monthly emergency savings cannot exceed disposable income. Once target is reached, surplus flows to investments.</li>
+            <li><strong>iDeCo monthly caps:</strong> ¥68,000/month for freelancers, ¥23,000/month for employees. Reduced if loans reduce available funds.</li>
+            <li><strong>NISA annual caps:</strong> Tsumitate ¥1.2M/year, Growth ¥2.4M/year. Annual limits are strict; cannot roll over unused space to next year.</li>
+            <li><strong>NISA lifetime caps:</strong> Tsumitate ¥6M lifetime, Growth ¥12M lifetime. Once reached, no further contributions allowed.</li>
+            <li><strong>At least one account required:</strong> At least one investment account type (iDeCo, NISA, or Taxable) must be enabled to accumulate wealth.</li>
+          </ul>
+
+          <h3
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--ink)",
+              marginTop: 18,
+              marginBottom: 8,
+            }}
+          >
+            Balance & Depletion Rules
+          </h3>
+          <ul style={{ color: "var(--n600)", lineHeight: 1.8, paddingLeft: 24, margin: "0 0 12px 0" }}>
+            <li><strong>No negative balances:</strong> Account balances can never go negative. Withdrawals stop when balance reaches ¥0.</li>
+            <li><strong>Portfolio depletion age:</strong> Set the age at which your portfolio should reach ¥0 (default: 90). SWP adjusts monthly to exactly reach this target.</li>
+            <li><strong>Pension reduces required capital:</strong> Expected pension income (entered as after-tax monthly amount) reduces the required portfolio size, as it covers part of retirement expenses.</li>
+            <li><strong>Lean FIRE vs Fat FIRE:</strong> Lean FIRE capital = SWP amount needed for your expenses. Fat FIRE = Lean × 1.5 (50% safety buffer for market downturns).</li>
+          </ul>
+        </section>
+
         {/* Advanced Features */}
         <section style={{ marginBottom: 36 }}>
           <h2

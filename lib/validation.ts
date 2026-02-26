@@ -210,5 +210,15 @@ export function validateSimulationInput(
     });
   }
 
+  // Validate NISA Tsumitate & Growth are not both disabled (if user wants to invest)
+  // This is informational, not a hard error
+  if (!input.accounts.idecoEnabled && !input.accounts.nisaTsumitateEnabled &&
+      !input.accounts.nisaGrowthEnabled && !input.accounts.taxableEnabled) {
+    errors.push({
+      field: "accounts",
+      message: "At least one investment account type must be enabled to accumulate wealth",
+    });
+  }
+
   return errors;
 }
