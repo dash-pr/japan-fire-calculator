@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
     AreaChart,
     Area,
+    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -11,6 +12,7 @@ import {
     ReferenceLine,
     ResponsiveContainer,
     Legend,
+    ComposedChart,
 } from "recharts";
 import { MonthlySnapshot, SimulationResult } from "@/lib/fireCalculator";
 import { formatYen } from "@/lib/fireCalculator";
@@ -18,6 +20,28 @@ import { formatYen } from "@/lib/fireCalculator";
 interface Props {
     result: SimulationResult | null;
 }
+
+interface VisibilityState {
+    total: boolean;
+    ideco: boolean;
+    nisaTsumitate: boolean;
+    nisaGrowth: boolean;
+    taxable: boolean;
+    spending: boolean;
+    swp: boolean;
+    fireLines: boolean;
+}
+
+// Distinct colors for each account type
+const COLORS = {
+    total: { stroke: "#F9F9F7", fill: "rgba(249,249,247,0.1)" },
+    ideco: { stroke: "#4169E1", fill: "rgba(65,105,225,0.6)", gradient: "gIdeco" },
+    nisaTsumitate: { stroke: "#32CD32", fill: "rgba(50,205,50,0.6)", gradient: "gNisaT" },
+    nisaGrowth: { stroke: "#FFD700", fill: "rgba(255,215,0,0.6)", gradient: "gNisaG" },
+    taxable: { stroke: "#9370DB", fill: "rgba(147,112,219,0.6)", gradient: "gTaxable" },
+    spending: { stroke: "#FF6B6B", fill: "none" },
+    swp: { stroke: "#4ECDC4", fill: "none" },
+};
 
 function formatYenAxis(v: number) {
     if (v >= 1_0000_0000) return `¥${(v / 1_0000_0000).toFixed(0)}億`;
@@ -56,14 +80,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <Row label="Total Portfolio"     value={formatYen(total)}                            color="#F9F9F7"             bold />
-                    <Row label="iDeCo"               value={formatYen(snap.ideco)}                      color="#A3A3A3"                  />
-                    <Row label="NISA Tsumitate"       value={formatYen(snap.nisaTsumitate)}              color="#D4D4C8"                  />
-                    <Row label="NISA Growth"          value={formatYen(snap.nisaGrowth)}                 color="#E5E5E0"                  />
-                    <Row label="Taxable"              value={formatYen(snap.taxable)}                    color="#737373"                  />
-                    {snap.swpWithdrawal > 0 && <Row label="SWP Withdrawal" value={formatYen(snap.swpWithdrawal)} color="#CC6600" />}
+                    <Row label="iDeCo"               value={formatYen(snap.ideco)}                      color="#4169E1"                  />
+                    <Row label="NISA Tsumitate"       value={formatYen(snap.nisaTsumitate)}              color="#32CD32"                  />
+                    <Row label="NISA Growth"          value={formatYen(snap.nisaGrowth)}                 color="#FFD700"                  />
+                    <Row label="Taxable"              value={formatYen(snap.taxable)}                    color="#9370DB"                  />
+                    {snap.swpWithdrawal > 0 && <Row label="SWP Withdrawal" value={formatYen(snap.swpWithdrawal)} color="#4ECDC4" />}
                     <div style={{ height: 1, background: "rgba(255,255,255,0.12)", margin: "4px 0" }} />
                     <Row label="FIRE Capital Needed" value={formatYen(snap.requiredCapital)}             color="#CC0000"                 />
-                    <Row label="Monthly Expenses"    value={formatYen(snap.monthlyExpenses + snap.loanPayment)}             color="rgba(255,255,255,0.35)" />
+                    <Row label="Monthly Expenses"    value={formatYen(snap.monthlyExpenses + snap.loanPayment)}             color="#FF6B6B" />
                 </div>
             </div>
         );
@@ -81,6 +105,17 @@ function Row({ label, value, color, bold }: { label: string; value: string; colo
 }
 
 export default function PortfolioChart({ result }: Props) {
+    const [visibility, setVisibility] = useState<VisibilityState>({
+        total: true,
+        ideco: false,
+        nisaTsumitate: false,
+        nisaGrowth: false,
+        taxable: false,
+        spending: true,
+        swp: true,
+        fireLines: true,
+    });
+
     // Downsample to yearly snapshots (Dec of each year)
     const chartData = useMemo(() => {
         if (!result) return [];
@@ -96,6 +131,9 @@ export default function PortfolioChart({ result }: Props) {
                 nisaTsumitate: snap.nisaTsumitate,
                 nisaGrowth: snap.nisaGrowth,
                 taxable: snap.taxable,
+                portfolio: snap.portfolio,
+                spending: (snap.monthlyExpenses + snap.loanPayment) * 12,
+                swp: snap.swpWithdrawal * 12,
                 required: snap.requiredCapital,
                 fatRequired: snap.fatFireCapital,
                 _snap: snap,
@@ -125,6 +163,51 @@ export default function PortfolioChart({ result }: Props) {
     const leanYear = result.leanFireYear?.toString();
     const fatYear = result.fatFireYear?.toString();
     const depletionYear = result.portfolioDepletionYear?.toString();
+
+    // Toggle button component
+    const ToggleButton = ({ label, color, checked }: { label: string; color: string; checked: boolean }) => (
+        <label
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                cursor: "pointer",
+                userSelect: "none",
+                opacity: checked ? 1 : 0.5,
+            }}
+        >
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => {
+                    const key = label.toLowerCase().replace(/[\s\/]/g, "") as keyof VisibilityState;
+                    setVisibility((prev) => ({ ...prev, [key]: e.target.checked }));
+                }}
+                style={{
+                    cursor: "pointer",
+                    accentColor: color,
+                }}
+            />
+            <span
+                style={{
+                    width: 12,
+                    height: 2,
+                    background: color,
+                    display: "inline-block",
+                }}
+            />
+            <span
+                style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 9,
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase",
+                }}
+            >
+                {label}
+            </span>
+        </label>
+    );
 
     return (
         <div
@@ -199,24 +282,48 @@ export default function PortfolioChart({ result }: Props) {
                     )}
                 </div>
             </div>
+
+            {/* ── Toggle Controls ── */}
+            <div
+                style={{
+                    padding: "12px 20px",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 16,
+                    borderBottom: "1px solid rgba(17,17,17,0.08)",
+                    marginBottom: 16,
+                    fontSize: 9,
+                }}
+            >
+                <ToggleButton label="Total Portfolio" color={COLORS.total.stroke} checked={visibility.total} />
+                <ToggleButton label="iDeCo" color={COLORS.ideco.stroke} checked={visibility.ideco} />
+                <ToggleButton label="NISA Tsumitate" color={COLORS.nisaTsumitate.stroke} checked={visibility.nisaTsumitate} />
+                <ToggleButton label="NISA Growth" color={COLORS.nisaGrowth.stroke} checked={visibility.nisaGrowth} />
+                <ToggleButton label="Taxable" color={COLORS.taxable.stroke} checked={visibility.taxable} />
+                <div style={{ marginLeft: "auto" }} />
+                <ToggleButton label="Spending" color={COLORS.spending.stroke} checked={visibility.spending} />
+                <ToggleButton label="Max SWP" color={COLORS.swp.stroke} checked={visibility.swp} />
+                <ToggleButton label="FIRE Lines" color="#CC0000" checked={visibility.fireLines} />
+            </div>
+
             <ResponsiveContainer width="100%" height={360}>
                 <AreaChart data={chartData} margin={{ top: 40, right: 24, left: 16, bottom: 0 }}>
                     <defs>
                         <linearGradient id="gIdeco" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%"  stopColor="#404040" stopOpacity={0.55} />
-                            <stop offset="95%" stopColor="#404040" stopOpacity={0.03} />
+                            <stop offset="5%"  stopColor="#4169E1" stopOpacity={0.6} />
+                            <stop offset="95%" stopColor="#4169E1" stopOpacity={0.05} />
                         </linearGradient>
                         <linearGradient id="gNisaT" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%"  stopColor="#1a1a1a" stopOpacity={0.65} />
-                            <stop offset="95%" stopColor="#1a1a1a" stopOpacity={0.04} />
+                            <stop offset="5%"  stopColor="#32CD32" stopOpacity={0.6} />
+                            <stop offset="95%" stopColor="#32CD32" stopOpacity={0.05} />
                         </linearGradient>
                         <linearGradient id="gNisaG" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%"  stopColor="#4a4a4a" stopOpacity={0.5} />
-                            <stop offset="95%" stopColor="#4a4a4a" stopOpacity={0.03} />
+                            <stop offset="5%"  stopColor="#FFD700" stopOpacity={0.6} />
+                            <stop offset="95%" stopColor="#FFD700" stopOpacity={0.05} />
                         </linearGradient>
                         <linearGradient id="gTaxable" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%"  stopColor="#A3A3A3" stopOpacity={0.45} />
-                            <stop offset="95%" stopColor="#A3A3A3" stopOpacity={0.02} />
+                            <stop offset="5%"  stopColor="#9370DB" stopOpacity={0.6} />
+                            <stop offset="95%" stopColor="#9370DB" stopOpacity={0.05} />
                         </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="2 4" stroke="rgba(17,17,17,0.08)" horizontal={true} vertical={false} />
@@ -235,59 +342,112 @@ export default function PortfolioChart({ result }: Props) {
                         width={72}
                     />
                     <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#111111", strokeWidth: 1, strokeDasharray: "3 3" }} />
+
+                    {/* Total portfolio line (top) */}
+                    {visibility.total && (
+                        <Line
+                            type="monotone"
+                            dataKey="portfolio"
+                            stroke={COLORS.total.stroke}
+                            strokeWidth={2.5}
+                            fill="none"
+                            name="Total Portfolio"
+                            dot={false}
+                        />
+                    )}
+
+                    {/* Stacked portfolio areas — with distinct colors */}
+                    {visibility.ideco && (
+                        <Area
+                            type="monotone"
+                            dataKey="ideco"
+                            stackId="portfolio"
+                            stroke={COLORS.ideco.stroke}
+                            strokeWidth={1}
+                            fill="url(#gIdeco)"
+                            name="iDeCo"
+                            dot={false}
+                        />
+                    )}
+                    {visibility.nisaTsumitate && (
+                        <Area
+                            type="monotone"
+                            dataKey="nisaTsumitate"
+                            stackId="portfolio"
+                            stroke={COLORS.nisaTsumitate.stroke}
+                            strokeWidth={1}
+                            fill="url(#gNisaT)"
+                            name="NISA Tsumitate"
+                            dot={false}
+                        />
+                    )}
+                    {visibility.nisaGrowth && (
+                        <Area
+                            type="monotone"
+                            dataKey="nisaGrowth"
+                            stackId="portfolio"
+                            stroke={COLORS.nisaGrowth.stroke}
+                            strokeWidth={1}
+                            fill="url(#gNisaG)"
+                            name="NISA Growth"
+                            dot={false}
+                        />
+                    )}
+                    {visibility.taxable && (
+                        <Area
+                            type="monotone"
+                            dataKey="taxable"
+                            stackId="portfolio"
+                            stroke={COLORS.taxable.stroke}
+                            strokeWidth={1}
+                            fill="url(#gTaxable)"
+                            name="Taxable"
+                            dot={false}
+                        />
+                    )}
+
+                    {/* Spending line */}
+                    {visibility.spending && (
+                        <Line
+                            type="monotone"
+                            dataKey="spending"
+                            stroke={COLORS.spending.stroke}
+                            strokeWidth={2}
+                            strokeDasharray="4 4"
+                            fill="none"
+                            name="Annual Spending"
+                            dot={false}
+                        />
+                    )}
+
+                    {/* Max SWP line */}
+                    {visibility.swp && (
+                        <Line
+                            type="monotone"
+                            dataKey="swp"
+                            stroke={COLORS.swp.stroke}
+                            strokeWidth={2}
+                            strokeDasharray="3 3"
+                            fill="none"
+                            name="Max SWP"
+                            dot={false}
+                        />
+                    )}
+
                     {/* Required capital — editorial red dashed line */}
-                    <Area
-                        type="monotone"
-                        dataKey="required"
-                        stroke="#CC0000"
-                        strokeWidth={1.5}
-                        strokeDasharray="5 3"
-                        fill="none"
-                        name="FIRE Capital"
-                        dot={false}
-                    />
-                    {/* Stacked portfolio areas — greyscale */}
-                    <Area
-                        type="monotone"
-                        dataKey="ideco"
-                        stackId="portfolio"
-                        stroke="#404040"
-                        strokeWidth={1}
-                        fill="url(#gIdeco)"
-                        name="iDeCo"
-                        dot={false}
-                    />
-                    <Area
-                        type="monotone"
-                        dataKey="nisaTsumitate"
-                        stackId="portfolio"
-                        stroke="#1a1a1a"
-                        strokeWidth={1}
-                        fill="url(#gNisaT)"
-                        name="NISA Tsumitate"
-                        dot={false}
-                    />
-                    <Area
-                        type="monotone"
-                        dataKey="nisaGrowth"
-                        stackId="portfolio"
-                        stroke="#4a4a4a"
-                        strokeWidth={1}
-                        fill="url(#gNisaG)"
-                        name="NISA Growth"
-                        dot={false}
-                    />
-                    <Area
-                        type="monotone"
-                        dataKey="taxable"
-                        stackId="portfolio"
-                        stroke="#A3A3A3"
-                        strokeWidth={1}
-                        fill="url(#gTaxable)"
-                        name="Taxable"
-                        dot={false}
-                    />
-                    {leanYear && (
+                    {visibility.fireLines && (
+                        <Area
+                            type="monotone"
+                            dataKey="required"
+                            stroke="#CC0000"
+                            strokeWidth={1.5}
+                            strokeDasharray="5 3"
+                            fill="none"
+                            name="FIRE Capital"
+                            dot={false}
+                        />
+                    )}
+                    {visibility.fireLines && leanYear && (
                         <ReferenceLine
                             x={leanYear}
                             stroke="#111111"
@@ -303,7 +463,7 @@ export default function PortfolioChart({ result }: Props) {
                             }}
                         />
                     )}
-                    {fatYear && (
+                    {visibility.fireLines && fatYear && (
                         <ReferenceLine
                             x={fatYear}
                             stroke="#CC0000"
@@ -319,7 +479,7 @@ export default function PortfolioChart({ result }: Props) {
                             }}
                         />
                     )}
-                    {depletionYear && (
+                    {visibility.fireLines && depletionYear && (
                         <ReferenceLine
                             x={depletionYear}
                             stroke="#CC0000"
