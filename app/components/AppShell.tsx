@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/breakdown",  label: "Data Table",      short: "Breakdown"  },
   { href: "/cashflow",   label: "Cash Flow",       short: "Cash Flow"  },
   { href: "/funds",      label: "Fund Guide",      short: "Funds"      },
+  { href: "/docs",       label: "Documentation",   short: "Docs"       },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
