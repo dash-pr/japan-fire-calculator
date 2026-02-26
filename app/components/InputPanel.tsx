@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { FutureExpense, AccountToggles, NISA_FUNDS, IDeCoType } from "@/lib/fireCalculator";
+import { Loan, AccountToggles, NISA_FUNDS, IDeCoType } from "@/lib/fireCalculator";
 import { formatYen } from "@/lib/fireCalculator";
 import { X as XIcon, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -42,9 +42,9 @@ interface Props {
     onLifestyleInflation: (v: number) => void;
     postFatfireMonthlyIncome: number;
     onPostFatfireMonthlyIncome: (v: number) => void;
-    // Future expenses
-    futureExpenses: FutureExpense[];
-    onFutureExpenses: (v: FutureExpense[]) => void;
+    // Loans & mortgages
+    loans: Loan[];
+    onLoans: (v: Loan[]) => void;
     // Current portfolio balances
     initialIdecoBalance: number;
     onInitialIdecoBalance: (v: number) => void;
@@ -316,8 +316,6 @@ function Toggle({
     );
 }
 
-let feIdCounter = 1000;
-
 export default function InputPanel({
     currentAge,
     targetFireAge,
@@ -349,8 +347,8 @@ export default function InputPanel({
     onLifestyleInflation,
     postFatfireMonthlyIncome,
     onPostFatfireMonthlyIncome,
-    futureExpenses,
-    onFutureExpenses,
+    loans,
+    onLoans,
     initialIdecoBalance,
     onInitialIdecoBalance,
     initialNisaTsumitateBalance,
@@ -362,19 +360,19 @@ export default function InputPanel({
 }: Props) {
     const [showFunds, setShowFunds] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
-    const [newFe, setNewFe] = useState({ label: "", yearsFromNow: 5, amount: 5_000_000 });
+    const [newLoan, setNewLoan] = useState({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360 });
 
-    const addExpense = () => {
-        if (!newFe.label.trim()) return;
-        onFutureExpenses([
-            ...futureExpenses,
-            { ...newFe, id: String(feIdCounter++) },
+    const addLoan = () => {
+        if (!newLoan.label.trim() || newLoan.principal <= 0 || newLoan.remainingMonths <= 0) return;
+        onLoans([
+            ...loans,
+            { ...newLoan, id: String(Date.now()) },
         ]);
-        setNewFe({ label: "", yearsFromNow: 5, amount: 5_000_000 });
+        setNewLoan({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360 });
     };
 
-    const removeExpense = (id: string) =>
-        onFutureExpenses(futureExpenses.filter((f) => f.id !== id));
+    const removeLoan = (id: string) =>
+        onLoans(loans.filter((l) => l.id !== id));
 
     const fmtPct = (v: number) => `${v}%`;
     const fmtAge = (v: number) => `age\u00a0${v}`;
@@ -597,69 +595,73 @@ export default function InputPanel({
                 </div>
             )}
 
-            {/* ── Future Expenses ── */}
-            <SectionHeader title="Future Lump-Sum Expenses" />
+            {/* ── Loans & Mortgages ── */}
+            <SectionHeader title="Loans & Mortgages (optional)" />
 
-            {/* Existing expenses */}
-            {futureExpenses.map((fe) => (
-                <div
-                    key={fe.id}
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        padding: "7px 10px",
-                        marginBottom: 6,
-                        gap: 8,
-                    }}
-                >
-                    <span
+            {/* Existing loans */}
+            {loans.map((loan) => {
+                const monthlyPayment = loan.remainingMonths > 0
+                    ? (loan.principal * ((loan.annualInterestRate / 100 / 12) * Math.pow(1 + loan.annualInterestRate / 100 / 12, loan.remainingMonths))) / (Math.pow(1 + loan.annualInterestRate / 100 / 12, loan.remainingMonths) - 1)
+                    : 0;
+                const yearsRemaining = Math.ceil(loan.remainingMonths / 12);
+                return (
+                    <div
+                        key={loan.id}
                         style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 11,
-                            color: "#F9F9F7",
-                            fontWeight: 500,
-                            flex: 1,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                        }}
-                    >
-                        {fe.label}
-                    </span>
-                    <span
-                        style={{
-                            fontFamily: "'JetBrains Mono', monospace",
-                            fontSize: 10,
-                            color: "rgba(255,255,255,0.4)",
-                            whiteSpace: "nowrap",
-                        }}
-                    >
-                        +{fe.yearsFromNow}yr · {formatYen(fe.amount)}
-                    </span>
-                    <button
-                        onClick={() => removeExpense(fe.id)}
-                        aria-label={`Remove ${fe.label}`}
-                        style={{
-                            background: "none",
-                            border: "none",
-                            padding: "2px",
-                            cursor: "pointer",
-                            color: "#CC0000",
                             display: "flex",
                             alignItems: "center",
-                            minWidth: 20,
-                            minHeight: 20,
+                            justifyContent: "space-between",
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            padding: "8px 10px",
+                            marginBottom: 8,
+                            gap: 8,
                         }}
                     >
-                        <XIcon size={12} strokeWidth={2} />
-                    </button>
-                </div>
-            ))}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                                style={{
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontSize: 11,
+                                    color: "#F9F9F7",
+                                    fontWeight: 500,
+                                    marginBottom: 2,
+                                }}
+                            >
+                                {loan.label}
+                            </div>
+                            <div
+                                style={{
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    fontSize: 9,
+                                    color: "rgba(255,255,255,0.4)",
+                                }}
+                            >
+                                {formatYen(loan.principal)} · {loan.annualInterestRate}% · {yearsRemaining}yr (~{formatYen(Math.round(monthlyPayment))}/mo)
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => removeLoan(loan.id)}
+                            aria-label={`Remove ${loan.label}`}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                padding: "2px",
+                                cursor: "pointer",
+                                color: "#CC0000",
+                                display: "flex",
+                                alignItems: "center",
+                                minWidth: 20,
+                                minHeight: 20,
+                            }}
+                        >
+                            <XIcon size={12} strokeWidth={2} />
+                        </button>
+                    </div>
+                );
+            })}
 
-            {/* Add new expense form */}
+            {/* Add new loan form */}
             <div
                 style={{
                     background: "rgba(255,255,255,0.03)",
@@ -667,15 +669,15 @@ export default function InputPanel({
                     padding: "10px",
                     display: "flex",
                     flexDirection: "column",
-                    gap: 6,
+                    gap: 8,
                     marginBottom: 24,
                 }}
             >
                 <input
                     type="text"
-                    placeholder="Label (e.g. House Purchase)"
-                    value={newFe.label}
-                    onChange={(e) => setNewFe((f) => ({ ...f, label: e.target.value }))}
+                    placeholder="Label (e.g. Mortgage, Car Loan)"
+                    value={newLoan.label}
+                    onChange={(e) => setNewLoan((l) => ({ ...l, label: e.target.value }))}
                     style={{
                         background: "transparent",
                         border: "none",
@@ -688,24 +690,34 @@ export default function InputPanel({
                         width: "100%",
                     }}
                 />
-                <div style={{ display: "flex", gap: 6 }}>
-                    <div style={{ flex: 1 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    <div>
+                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Principal (¥)</label>
                         <NumberInput
-                            value={newFe.yearsFromNow}
-                            onChange={(v) => setNewFe((f) => ({ ...f, yearsFromNow: v }))}
-                            min={1} max={50} suffix="yr"
+                            value={newLoan.principal}
+                            onChange={(v) => setNewLoan((l) => ({ ...l, principal: v }))}
+                            min={0} step={1000000} prefix="¥"
                         />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div>
+                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Interest Rate (%)</label>
                         <NumberInput
-                            value={newFe.amount}
-                            onChange={(v) => setNewFe((f) => ({ ...f, amount: v }))}
-                            step={500000} prefix="¥"
+                            value={newLoan.annualInterestRate}
+                            onChange={(v) => setNewLoan((l) => ({ ...l, annualInterestRate: v }))}
+                            min={0} max={20} step={0.1} suffix="%"
                         />
                     </div>
                 </div>
+                <div>
+                    <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Term (months)</label>
+                    <NumberInput
+                        value={newLoan.remainingMonths}
+                        onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: v }))}
+                        min={1} max={600} step={12} suffix=" months"
+                    />
+                </div>
                 <button
-                    onClick={addExpense}
+                    onClick={addLoan}
                     style={{
                         background: "#CC0000",
                         border: "none",
@@ -720,7 +732,7 @@ export default function InputPanel({
                         transition: "background 0.15s",
                     }}
                 >
-                    + Add Expense
+                    + Add Loan
                 </button>
             </div>
         </div>

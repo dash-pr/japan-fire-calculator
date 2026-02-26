@@ -5,7 +5,7 @@ import {
   runSimulation,
   SimulationInput,
   SimulationResult,
-  FutureExpense,
+  Loan,
   AccountToggles,
   IDeCoType,
 } from "@/lib/fireCalculator";
@@ -22,7 +22,7 @@ const DEFAULT_INPUT: SimulationInput = {
   postFatfireMonthlyIncome: 0,
   salaryIncreaseRate: 3,
   annualInflation: 2,
-  futureExpenses: [],
+  loans: [],
   accounts: {
     idecoEnabled: true,
     nisaEnabled: true,
@@ -76,8 +76,8 @@ export interface SimulatorContextValue {
   setIdecoType: (v: IDeCoType) => void;
   annualReturn: number;
   setAnnualReturn: (v: number) => void;
-  futureExpenses: FutureExpense[];
-  setFutureExpenses: (v: FutureExpense[]) => void;
+  loans: Loan[];
+  setLoans: (v: Loan[]) => void;
   juniorNisaBalance: number;
   setJuniorNisaBalance: (v: number) => void;
   swpDepletionAge: number;
@@ -111,7 +111,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
   const [accounts, setAccounts] = useState<AccountToggles>(DEFAULT_INPUT.accounts);
   const [idecoType, setIdecoType] = useState<IDeCoType>(DEFAULT_INPUT.idecoType);
   const [annualReturn, setAnnualReturn] = useState(DEFAULT_INPUT.annualReturn);
-  const [futureExpenses, setFutureExpenses] = useState<FutureExpense[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [juniorNisaBalance, setJuniorNisaBalance] = useState(DEFAULT_INPUT.juniorNisaBalance);
   const [swpDepletionAge, setSwpDepletionAge] = useState(DEFAULT_INPUT.swpDepletionAge ?? 90);
   const [initialIdecoBalance, setInitialIdecoBalance] = useState(DEFAULT_INPUT.initialIdecoBalance ?? 0);
@@ -131,7 +131,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
     postFatfireMonthlyIncome,
     salaryIncreaseRate,
     annualInflation,
-    futureExpenses,
+    loans,
     accounts,
     idecoType,
     juniorNisaBalance,
@@ -170,7 +170,7 @@ export function SimulatorProvider({ children }: { children: React.ReactNode }) {
         accounts, setAccounts,
         idecoType, setIdecoType,
         annualReturn, setAnnualReturn,
-        futureExpenses, setFutureExpenses,
+        loans, setLoans,
         juniorNisaBalance, setJuniorNisaBalance,
         swpDepletionAge, setSwpDepletionAge,
         initialIdecoBalance, setInitialIdecoBalance,

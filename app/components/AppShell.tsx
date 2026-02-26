@@ -40,8 +40,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setIdecoType,
     annualReturn,
     setAnnualReturn,
-    futureExpenses,
-    setFutureExpenses,
+    loans,
+    setLoans,
     juniorNisaBalance,
     setJuniorNisaBalance,
     swpDepletionAge,
@@ -310,8 +310,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               onLifestyleInflation={setLifestyleInflation}
               postFatfireMonthlyIncome={postFatfireMonthlyIncome}
               onPostFatfireMonthlyIncome={setPostFatfireMonthlyIncome}
-              futureExpenses={futureExpenses}
-              onFutureExpenses={setFutureExpenses}
+              loans={loans}
+              onLoans={setLoans}
               initialIdecoBalance={initialIdecoBalance}
               onInitialIdecoBalance={setInitialIdecoBalance}
               initialNisaTsumitateBalance={initialNisaTsumitateBalance}

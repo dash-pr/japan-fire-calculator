@@ -14,6 +14,14 @@ export interface FutureExpense {
   amount: number; // in yen
 }
 
+export interface Loan {
+  id: string;
+  label: string;
+  principal: number;        // yen — remaining balance
+  annualInterestRate: number; // % e.g. 2.5 for mortgage, 5 for car loan
+  remainingMonths: number;  // months until loan is paid off
+}
+
 export interface AccountToggles {
   idecoEnabled: boolean;
   nisaEnabled: boolean;
@@ -34,7 +42,7 @@ export interface SimulationInput {
   postFatfireMonthlyIncome?: number; // yen/month additional side income after FATFIRE is achieved
   salaryIncreaseRate: number;     // % per year  e.g. 3
   annualInflation: number;        // % per year  e.g. 2
-  futureExpenses: FutureExpense[];
+  loans: Loan[];
   accounts: AccountToggles;
   idecoType: IDeCoType;
   juniorNisaBalance: number;      // yen — lump-sum added at FIRE date
@@ -138,7 +146,7 @@ export function runSimulation(input: SimulationInput): SimulationResult {
     postFatfireMonthlyIncome = 0,
     salaryIncreaseRate,
     annualInflation,
-    futureExpenses,
+    loans,
     accounts,
     idecoType,
     juniorNisaBalance,
@@ -200,6 +208,12 @@ export function runSimulation(input: SimulationInput): SimulationResult {
   let swpMonthlyAtFire = 0;
   let juniorNisaInjected = false;
 
+  // ── Loan tracking (mutable copy of input loans) ──────────────────────────
+  const loanStates: Array<{ principal: number; remainingMonths: number }> = loans.map(l => ({
+    principal: l.principal,
+    remainingMonths: l.remainingMonths,
+  }));
+
   const totalMonths = (LIFE_EXPECTANCY - currentAge) * 12;
   const calendarMonthStart = new Date().getMonth() + 1; // 1-based
 
@@ -246,18 +260,32 @@ export function runSimulation(input: SimulationInput): SimulationResult {
         + idecoTaxSaving
     );
 
-    // ── Future lump-sum expenses (accumulation only) ──────────────────────
-    let extraExpense = 0;
-    if (!isFired) {
-      for (const fe of futureExpenses) {
-        const expenseYear = startYear + fe.yearsFromNow;
-        if (year === expenseYear && monthInYear === 1) {
-          extraExpense += fe.amount / 12;
+    // ── Loan payments (reduce principal each month) ───────────────────────
+    let loanPayment = 0;
+    // Calculate total loan payment for this month and reduce principal
+    for (let loanIdx = 0; loanIdx < loanStates.length; loanIdx++) {
+      const loanState = loanStates[loanIdx];
+      if (loanState.remainingMonths > 0) {
+        const loanDef = loans[loanIdx];
+        const monthlyRate = loanDef.annualInterestRate / 100 / 12;
+        // Standard loan payment formula: P * (r * (1+r)^n) / ((1+r)^n - 1)
+        const monthlyPayment = loanState.principal *
+          (monthlyRate * Math.pow(1 + monthlyRate, loanState.remainingMonths)) /
+          (Math.pow(1 + monthlyRate, loanState.remainingMonths) - 1);
+
+        if (!isNaN(monthlyPayment) && monthlyPayment > 0) {
+          loanPayment += monthlyPayment;
+
+          // Reduce principal: interest is paid first, rest goes to principal
+          const interestPayment = loanState.principal * monthlyRate;
+          const principalPayment = monthlyPayment - interestPayment;
+          loanState.principal = Math.max(0, loanState.principal - principalPayment);
+          loanState.remainingMonths--;
         }
       }
     }
 
-    let remainingSavings = disposableIncome - extraExpense;
+    let remainingSavings = disposableIncome - loanPayment;
 
     // ── Contributions (accumulation phase only) ───────────────────────────
     if (!isFired) {
