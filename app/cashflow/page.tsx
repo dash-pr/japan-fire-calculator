@@ -18,6 +18,7 @@ import { formatYen } from "@/lib/fireCalculator";
 // ── Colour palette ────────────────────────────────────────────────────────────
 const C = {
   expenses:   "#CC0000",
+  loans:      "#C44569",
   ideco:      "#2C5F8A",
   nisaT:      "#3A8A4A",
   nisaG:      "#5BBF6B",
@@ -115,11 +116,12 @@ export default function CashFlowPage() {
         .map((s) => {
           const invested =
             s.idecoCont + s.nisaTsumCont + s.nisaGrowthCont + s.taxableCont;
-          const surplus = Math.max(0, s.grossIncome - s.monthlyExpenses - invested);
+          const surplus = Math.max(0, s.grossIncome - s.monthlyExpenses - s.loanPayment - invested);
           return {
             year: String(s.year),
             age: s.age,
             "Living Expenses": s.monthlyExpenses,
+            "Loan Payments": s.loanPayment,
             iDeCo: s.idecoCont,
             "NISA Tsumitate": s.nisaTsumCont,
             "NISA Growth": s.nisaGrowthCont,
@@ -141,6 +143,7 @@ export default function CashFlowPage() {
           "SWP Income": s.swpWithdrawal,
           "Side Income": s.postFireSideIncome,
           "Living Expenses": s.monthlyExpenses,
+          "Loan Payments": s.loanPayment,
         })),
     [allRows, targetFireAge]
   );
@@ -174,6 +177,9 @@ export default function CashFlowPage() {
     : 0;
   const savingsRateStr =
     peakSalary > 0 ? `${((peakSaved / peakSalary) * 100).toFixed(0)}%` : "—";
+
+  // Peak loan payment
+  const peakLoanPayment = Math.max(...allRows.map(s => s.loanPayment), 0);
 
   return (
     <>
@@ -224,6 +230,11 @@ export default function CashFlowPage() {
             value: peakSalary > 0 ? formatYen(peakSalary) : "—",
             color: C.ideco,
           },
+          ...(peakLoanPayment > 0 ? [{
+            label: "Peak Loan Payment / mo",
+            value: formatYen(peakLoanPayment),
+            color: C.loans,
+          }] : []),
         ].map(({ label, value, color }) => (
           <div
             key={label}
@@ -331,6 +342,11 @@ export default function CashFlowPage() {
                 stackId="a"
                 fill={C.expenses}
               />
+              <Bar
+                dataKey="Loan Payments"
+                stackId="a"
+                fill={C.loans}
+              />
               <Bar dataKey="iDeCo" stackId="a" fill={C.ideco} />
               <Bar dataKey="NISA Tsumitate" stackId="a" fill={C.nisaT} />
               <Bar dataKey="NISA Growth" stackId="a" fill={C.nisaG} />
@@ -428,6 +444,11 @@ export default function CashFlowPage() {
                 dataKey="Living Expenses"
                 stackId="c"
                 fill={C.expRet}
+              />
+              <Bar
+                dataKey="Loan Payments"
+                stackId="c"
+                fill={C.loans}
                 radius={[2, 2, 0, 0]}
               />
             </BarChart>
@@ -464,6 +485,7 @@ export default function CashFlowPage() {
                   "Phase",
                   "Gross Income",
                   "→ Expenses",
+                  "→ Loans",
                   "→ iDeCo",
                   "→ NISA-T",
                   "→ NISA-G",
@@ -499,8 +521,8 @@ export default function CashFlowPage() {
                   s.nisaGrowthCont +
                   s.taxableCont;
                 const netDelta = isRetired
-                  ? s.swpWithdrawal + s.postFireSideIncome - s.monthlyExpenses
-                  : s.grossIncome - s.monthlyExpenses - invested;
+                  ? s.swpWithdrawal + s.postFireSideIncome - s.monthlyExpenses - s.loanPayment
+                  : s.grossIncome - s.monthlyExpenses - s.loanPayment - invested;
 
                 return (
                   <tr
@@ -535,6 +557,9 @@ export default function CashFlowPage() {
                     </td>
                     <td style={{ ...tdStyle, color: C.expenses }}>
                       {formatYen(s.monthlyExpenses)}
+                    </td>
+                    <td style={{ ...tdStyle, color: C.loans }}>
+                      {s.loanPayment > 0 ? formatYen(s.loanPayment) : "—"}
                     </td>
                     <td style={{ ...tdStyle, color: C.ideco }}>
                       {s.idecoCont > 0 ? formatYen(s.idecoCont) : "—"}
