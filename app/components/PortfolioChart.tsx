@@ -462,7 +462,7 @@ export default function PortfolioChart({ result }: Props) {
                             dataKey="required"
                             stroke="#CC0000"
                             strokeWidth={1.5}
-                            strokeDasharray="5 3"
+                            strokeDasharray="3 2"
                             fill="none"
                             name="FIRE Capital"
                             dot={false}
@@ -472,7 +472,7 @@ export default function PortfolioChart({ result }: Props) {
                         <ReferenceLine
                             x={leanYear}
                             stroke="#111111"
-                            strokeDasharray="4 2"
+                            strokeDasharray="3 2"
                             strokeWidth={1.5}
                             label={{
                                 value: "LEAN",
@@ -488,7 +488,7 @@ export default function PortfolioChart({ result }: Props) {
                         <ReferenceLine
                             x={fatYear}
                             stroke="#CC0000"
-                            strokeDasharray="4 2"
+                            strokeDasharray="3 2"
                             strokeWidth={1.5}
                             label={{
                                 value: "FAT",

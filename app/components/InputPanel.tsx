@@ -212,6 +212,50 @@ function SectionHeader({ title }: { title: string }) {
     );
 }
 
+/* ─── Collapsible Section ─── */
+function CollapsibleSection({
+    title,
+    isOpen,
+    onToggle,
+    children,
+}: {
+    title: string;
+    isOpen: boolean;
+    onToggle: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <div>
+            <button
+                onClick={onToggle}
+                style={{
+                    width: "100%",
+                    padding: "9px 0 8px",
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: "1px solid rgba(255,255,255,0.12)",
+                    color: "rgba(255,255,255,0.4)",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginTop: 8,
+                    marginBottom: isOpen ? 12 : 8,
+                }}
+            >
+                {title}
+                {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            {isOpen && <div style={{ marginBottom: 4 }}>{children}</div>}
+        </div>
+    );
+}
+
 /* ─── Label + children wrapper ─── */
 function Field({ label, info, children }: { label: string; info?: string; children: React.ReactNode }) {
     return (
@@ -402,6 +446,12 @@ export default function InputPanel({
 }: Props) {
     const [showFunds, setShowFunds] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [showProfile, setShowProfile] = useState(true);
+    const [showIncomeExpenses, setShowIncomeExpenses] = useState(true);
+    const [showInvestment, setShowInvestment] = useState(true);
+    const [showAccounts, setShowAccounts] = useState(true);
+    const [showPortfolio, setShowPortfolio] = useState(false);
+    const [showLoans, setShowLoans] = useState(false);
     const [newLoan, setNewLoan] = useState({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360 });
 
     const addLoan = () => {
@@ -430,145 +480,149 @@ export default function InputPanel({
             }}
         >
             {/* ── Profile ── */}
-            <SectionHeader title="Profile" />
-            <SliderField
-                label="Current Age" value={currentAge} onChange={onCurrentAge}
-                min={18} max={70} step={1} format={fmtAge}
-                info="Your age today. The simulation starts from this point."
-            />
-            <SliderField
-                label="Retirement Age" value={targetFireAge}
-                onChange={(v) => onTargetFireAge(Math.max(currentAge + 1, v))}
-                min={currentAge + 1} max={80} step={1} format={fmtAge}
-                info="Target age to stop working and start drawing down your portfolio (FIRE date)."
-            />
-            <SliderField
-                label="Portfolio Depletes at" value={swpDepletionAge}
-                onChange={(v) => onSwpDepletionAge(Math.max(targetFireAge + 1, v))}
-                min={targetFireAge + 1} max={100} step={1} format={fmtAge}
-                info="SWP is sized so your portfolio reaches exactly ¥0 at this age. Lower age = higher monthly income. Default 90."
-            />
+            <CollapsibleSection title="Profile" isOpen={showProfile} onToggle={() => setShowProfile(!showProfile)}>
+                <SliderField
+                    label="Current Age" value={currentAge} onChange={onCurrentAge}
+                    min={18} max={70} step={1} format={fmtAge}
+                    info="Your age today. The simulation starts from this point."
+                />
+                <SliderField
+                    label="Retirement Age" value={targetFireAge}
+                    onChange={(v) => onTargetFireAge(Math.max(currentAge + 1, v))}
+                    min={currentAge + 1} max={80} step={1} format={fmtAge}
+                    info="Target age to stop working and start drawing down your portfolio (FIRE date)."
+                />
+                <SliderField
+                    label="Portfolio Depletes at" value={swpDepletionAge}
+                    onChange={(v) => onSwpDepletionAge(Math.max(targetFireAge + 1, v))}
+                    min={targetFireAge + 1} max={100} step={1} format={fmtAge}
+                    info="SWP is sized so your portfolio reaches exactly ¥0 at this age. Lower age = higher monthly income. Default 90."
+                />
+            </CollapsibleSection>
 
             {/* ── Income & Expenses ── */}
-            <SectionHeader title="Income & Expenses" />
-            <Field label="Monthly Income" info="Current gross salary per month. Grows at your salary growth rate each year.">
-                <NumberInput value={monthlyIncome} onChange={onMonthlyIncome} step={10000} prefix="¥" />
-            </Field>
-            <Field label="Working Monthly Expenses" info="Living costs while you are still working. Grows with inflation.">
-                <NumberInput value={monthlyExpenses} onChange={onMonthlyExpenses} step={10000} prefix="¥" />
-            </Field>
-            <Field label="Post-FIRE Monthly Budget" info="Expected monthly spending in retirement, in today's yen. Adjusted for inflation at retirement date.">
-                <NumberInput value={postFireMonthlyExpenses} onChange={onPostFireMonthlyExpenses} step={10000} prefix="¥" />
-            </Field>
+            <CollapsibleSection title="Income & Expenses" isOpen={showIncomeExpenses} onToggle={() => setShowIncomeExpenses(!showIncomeExpenses)}>
+                <Field label="Monthly Income" info="Current gross salary per month. Grows at your salary growth rate each year.">
+                    <NumberInput value={monthlyIncome} onChange={onMonthlyIncome} step={10000} prefix="¥" />
+                </Field>
+                <Field label="Working Monthly Expenses" info="Living costs while you are still working. Grows with inflation.">
+                    <NumberInput value={monthlyExpenses} onChange={onMonthlyExpenses} step={10000} prefix="¥" />
+                </Field>
+                <Field label="Post-FIRE Monthly Budget" info="Expected monthly spending in retirement, in today's yen. Adjusted for inflation at retirement date.">
+                    <NumberInput value={postFireMonthlyExpenses} onChange={onPostFireMonthlyExpenses} step={10000} prefix="¥" />
+                </Field>
 
-            <SliderField
-                label="Salary Growth / yr" value={salaryIncreaseRate}
-                onChange={onSalaryIncreaseRate}
-                min={0} max={10} step={0.5} format={fmtPct}
-                info="Annual % salary increase. Boosts future savings capacity."
-            />
-            <SliderField
-                label="Annual Inflation" value={annualInflation}
-                onChange={onAnnualInflation}
-                min={0} max={8} step={0.25} format={fmtPct}
-                info="Expected price inflation. Erodes purchasing power and grows post-FIRE expenses."
-            />
+                <SliderField
+                    label="Salary Growth / yr" value={salaryIncreaseRate}
+                    onChange={onSalaryIncreaseRate}
+                    min={0} max={10} step={0.5} format={fmtPct}
+                    info="Annual % salary increase. Boosts future savings capacity."
+                />
+                <SliderField
+                    label="Annual Inflation" value={annualInflation}
+                    onChange={onAnnualInflation}
+                    min={0} max={8} step={0.25} format={fmtPct}
+                    info="Expected price inflation. Erodes purchasing power and grows post-FIRE expenses."
+                />
+            </CollapsibleSection>
 
             {/* ── Investment Return ── */}
-            <SectionHeader title="Investment Return" />
-            <SliderField
-                label="Expected Annual Return" value={annualReturn}
-                onChange={onAnnualReturn}
-                min={1} max={15} step={0.5} format={fmtPct}
-                info="Nominal annual return before inflation. E.g., 6% input with 2% inflation = ~4% real return. Use fund picker to auto-fill."
-            />
+            <CollapsibleSection title="Investment Return" isOpen={showInvestment} onToggle={() => setShowInvestment(!showInvestment)}>
+                <SliderField
+                    label="Expected Annual Return" value={annualReturn}
+                    onChange={onAnnualReturn}
+                    min={1} max={15} step={0.5} format={fmtPct}
+                    info="Nominal annual return before inflation. E.g., 6% input with 2% inflation = ~4% real return. Use fund picker to auto-fill."
+                />
 
-            {/* Fund picker toggle */}
-            <button
-                onClick={() => setShowFunds((s) => !s)}
-                style={{
-                    width: "100%",
-                    padding: "7px 10px",
-                    background: "transparent",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    color: "rgba(255,255,255,0.55)",
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 10,
-                    fontWeight: 600,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    marginBottom: 14,
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                    textAlign: "left",
-                }}
-            >
-                {showFunds ? "▲  Hide Fund Picker" : "▼  Browse NISA Funds"}
-            </button>
-            {showFunds && <FundPicker onSelect={onAnnualReturn} current={annualReturn} />}
-
-            {/* ── Accounts ── */}
-            <SectionHeader title="Account Types" />
-            <Toggle
-                label="iDeCo (max ¥68k/mo)"
-                checked={accounts.idecoEnabled}
-                onChange={(v) => onAccounts({ ...accounts, idecoEnabled: v })}
-            />
-            {/* iDeCo type selector */}
-            {accounts.idecoEnabled && (
-                <div
+                {/* Fund picker toggle */}
+                <button
+                    onClick={() => setShowFunds((s) => !s)}
                     style={{
-                        display: "flex",
-                        gap: 6,
-                        marginBottom: 10,
-                        marginTop: -4,
-                        paddingLeft: 2,
+                        width: "100%",
+                        padding: "7px 10px",
+                        background: "transparent",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        color: "rgba(255,255,255,0.55)",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        marginBottom: 14,
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                        textAlign: "left",
                     }}
                 >
-                    {(["freelancer", "employee"] as IDeCoType[]).map((type) => {
-                        const active = idecoType === type;
-                        const cap = type === "freelancer" ? "¥68k" : "¥23k";
-                        return (
-                            <button
-                                key={type}
-                                onClick={() => onIdecoType(type)}
-                                style={{
-                                    flex: 1,
-                                    padding: "5px 6px",
-                                    background: active ? "rgba(204,0,0,0.18)" : "rgba(255,255,255,0.05)",
-                                    border: `1px solid ${active ? "#CC0000" : "rgba(255,255,255,0.12)"}`,
-                                    color: active ? "#CC0000" : "rgba(255,255,255,0.45)",
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: 10,
-                                    fontWeight: active ? 700 : 400,
-                                    letterSpacing: "0.08em",
-                                    textTransform: "uppercase",
-                                    cursor: "pointer",
-                                    transition: "all 0.12s",
-                                }}
-                            >
-                                {type === "freelancer" ? "Freelancer" : "Employee"}<br />
-                                <span style={{ fontSize: 9, opacity: 0.7 }}>{cap}/mo</span>
-                            </button>
-                        );
-                    })}
-                </div>
-            )}
-            <Toggle
-                label="NISA Tsumitate — ¥6M lifetime (¥100k/mo)"
-                checked={accounts.nisaTsumitateEnabled}
-                onChange={(v) => onAccounts({ ...accounts, nisaTsumitateEnabled: v })}
-            />
-            <Toggle
-                label="NISA Growth — ¥12M lifetime (¥200k/mo)"
-                checked={accounts.nisaGrowthEnabled}
-                onChange={(v) => onAccounts({ ...accounts, nisaGrowthEnabled: v })}
-            />
-            <Toggle
-                label="Taxable Brokerage"
-                checked={accounts.taxableEnabled}
-                onChange={(v) => onAccounts({ ...accounts, taxableEnabled: v })}
-            />
+                    {showFunds ? "▲  Hide Fund Picker" : "▼  Browse NISA Funds"}
+                </button>
+                {showFunds && <FundPicker onSelect={onAnnualReturn} current={annualReturn} />}
+            </CollapsibleSection>
+
+            {/* ── Accounts ── */}
+            <CollapsibleSection title="Account Types" isOpen={showAccounts} onToggle={() => setShowAccounts(!showAccounts)}>
+                <Toggle
+                    label="iDeCo (max ¥68k/mo)"
+                    checked={accounts.idecoEnabled}
+                    onChange={(v) => onAccounts({ ...accounts, idecoEnabled: v })}
+                />
+                {/* iDeCo type selector */}
+                {accounts.idecoEnabled && (
+                    <div
+                        style={{
+                            display: "flex",
+                            gap: 6,
+                            marginBottom: 10,
+                            marginTop: -4,
+                            paddingLeft: 2,
+                        }}
+                    >
+                        {(["freelancer", "employee"] as IDeCoType[]).map((type) => {
+                            const active = idecoType === type;
+                            const cap = type === "freelancer" ? "¥68k" : "¥23k";
+                            return (
+                                <button
+                                    key={type}
+                                    onClick={() => onIdecoType(type)}
+                                    style={{
+                                        flex: 1,
+                                        padding: "5px 6px",
+                                        background: active ? "rgba(204,0,0,0.18)" : "rgba(255,255,255,0.05)",
+                                        border: `1px solid ${active ? "#CC0000" : "rgba(255,255,255,0.12)"}`,
+                                        color: active ? "#CC0000" : "rgba(255,255,255,0.45)",
+                                        fontFamily: "'JetBrains Mono', monospace",
+                                        fontSize: 10,
+                                        fontWeight: active ? 700 : 400,
+                                        letterSpacing: "0.08em",
+                                        textTransform: "uppercase",
+                                        cursor: "pointer",
+                                        transition: "all 0.12s",
+                                    }}
+                                >
+                                    {type === "freelancer" ? "Freelancer" : "Employee"}<br />
+                                    <span style={{ fontSize: 9, opacity: 0.7 }}>{cap}/mo</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+                <Toggle
+                    label="NISA Tsumitate — ¥6M lifetime (¥100k/mo)"
+                    checked={accounts.nisaTsumitateEnabled}
+                    onChange={(v) => onAccounts({ ...accounts, nisaTsumitateEnabled: v })}
+                />
+                <Toggle
+                    label="NISA Growth — ¥12M lifetime (¥200k/mo)"
+                    checked={accounts.nisaGrowthEnabled}
+                    onChange={(v) => onAccounts({ ...accounts, nisaGrowthEnabled: v })}
+                />
+                <Toggle
+                    label="Taxable Brokerage"
+                    checked={accounts.taxableEnabled}
+                    onChange={(v) => onAccounts({ ...accounts, taxableEnabled: v })}
+                />
+            </CollapsibleSection>
 
             {/* ── Advanced Options (collapsible) ── */}
             <button
@@ -675,22 +729,14 @@ export default function InputPanel({
                         )}
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
                         <div>
-                            <Field
-                                label="Post-FIRE Side Income / mo"
-                                info="Monthly income during retirement (part-time, rental, etc.). In today's yen."
-                            >
-                                <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
-                            </Field>
+                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FIRE Side Income / mo</label>
+                            <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
                         </div>
                         <div>
-                            <Field
-                                label="Ends at Age"
-                                info="When this income stops (typically when FATFIRE is reached). Automatically syncs with FATFIRE milestone."
-                            >
-                                <NumberInput value={postFireIncomeEndAge} onChange={onPostFireIncomeEndAge} step={1} min={0} max={90} />
-                            </Field>
+                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Ends at Age</label>
+                            <NumberInput value={postFireIncomeEndAge} onChange={onPostFireIncomeEndAge} step={1} min={0} max={90} />
                         </div>
                     </div>
                     <SliderField
@@ -703,194 +749,187 @@ export default function InputPanel({
                         format={fmtPct}
                         info="Annual increase in post-fire expenses beyond inflation. E.g., traveling more as you retire."
                     />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
                         <div>
-                            <Field
-                                label="Post-FATFIRE Side Income / mo"
-                                info="Additional monthly income that kicks in after you reach Fat FIRE. In today's yen."
-                            >
-                                <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
-                            </Field>
+                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FATFIRE Side Income / mo</label>
+                            <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
                         </div>
                         <div>
-                            <Field
-                                label="Ends at Age"
-                                info="When this income stops. Default: 90 (life expectancy)."
-                            >
-                                <NumberInput value={postFatfireIncomeEndAge} onChange={onPostFatfireIncomeEndAge} step={1} min={0} max={120} />
-                            </Field>
+                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Ends at Age</label>
+                            <NumberInput value={postFatfireIncomeEndAge} onChange={onPostFatfireIncomeEndAge} step={1} min={0} max={120} />
                         </div>
                     </div>
                 </div>
             )}
 
             {/* ── Current Portfolio Balances ── */}
-            <SectionHeader title="Current Portfolio (optional)" />
-            <Field
-                label="iDeCo Balance"
-                info="Your current iDeCo account balance in yen. Leave at 0 if you don't have an existing balance."
-            >
-                <NumberInput value={initialIdecoBalance} onChange={onInitialIdecoBalance} step={100000} prefix="¥" min={0} />
-            </Field>
-            <Field
-                label="NISA Tsumitate Balance"
-                info="Current balance in your NISA tsumitate (積立投資枠) account."
-            >
-                <NumberInput value={initialNisaTsumitateBalance} onChange={onInitialNisaTsumitateBalance} step={100000} prefix="¥" min={0} />
-            </Field>
-            <Field
-                label="NISA Growth Balance"
-                info="Current balance in your NISA growth (成長投資枠) account."
-            >
-                <NumberInput value={initialNisaGrowthBalance} onChange={onInitialNisaGrowthBalance} step={100000} prefix="¥" min={0} />
-            </Field>
-            <Field
-                label="Taxable Brokerage Balance"
-                info="Current balance in your taxable brokerage account."
-            >
-                <NumberInput value={initialTaxableBalance} onChange={onInitialTaxableBalance} step={100000} prefix="¥" min={0} />
-            </Field>
+            <CollapsibleSection title="Current Portfolio (optional)" isOpen={showPortfolio} onToggle={() => setShowPortfolio(!showPortfolio)}>
+                <Field
+                    label="iDeCo Balance"
+                    info="Your current iDeCo account balance in yen. Leave at 0 if you don't have an existing balance."
+                >
+                    <NumberInput value={initialIdecoBalance} onChange={onInitialIdecoBalance} step={100000} prefix="¥" min={0} />
+                </Field>
+                <Field
+                    label="NISA Tsumitate Balance"
+                    info="Current balance in your NISA tsumitate (積立投資枠) account."
+                >
+                    <NumberInput value={initialNisaTsumitateBalance} onChange={onInitialNisaTsumitateBalance} step={100000} prefix="¥" min={0} />
+                </Field>
+                <Field
+                    label="NISA Growth Balance"
+                    info="Current balance in your NISA growth (成長投資枠) account."
+                >
+                    <NumberInput value={initialNisaGrowthBalance} onChange={onInitialNisaGrowthBalance} step={100000} prefix="¥" min={0} />
+                </Field>
+                <Field
+                    label="Taxable Brokerage Balance"
+                    info="Current balance in your taxable brokerage account."
+                >
+                    <NumberInput value={initialTaxableBalance} onChange={onInitialTaxableBalance} step={100000} prefix="¥" min={0} />
+                </Field>
+            </CollapsibleSection>
 
             {/* ── Loans & Mortgages ── */}
-            <SectionHeader title="Loans & Mortgages (optional)" />
-
-            {/* Existing loans */}
-            {loans.map((loan) => {
-                const monthlyPayment = loan.remainingMonths > 0
-                    ? (loan.principal * ((loan.annualInterestRate / 100 / 12) * Math.pow(1 + loan.annualInterestRate / 100 / 12, loan.remainingMonths))) / (Math.pow(1 + loan.annualInterestRate / 100 / 12, loan.remainingMonths) - 1)
-                    : 0;
-                const yearsRemaining = Math.ceil(loan.remainingMonths / 12);
-                return (
-                    <div
-                        key={loan.id}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            padding: "8px 10px",
-                            marginBottom: 8,
-                            gap: 8,
-                        }}
-                    >
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <div
-                                style={{
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: 11,
-                                    color: "#F9F9F7",
-                                    fontWeight: 500,
-                                    marginBottom: 2,
-                                }}
-                            >
-                                {loan.label}
-                            </div>
-                            <div
-                                style={{
-                                    fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: 9,
-                                    color: "rgba(255,255,255,0.4)",
-                                }}
-                            >
-                                {formatYen(loan.principal)} · {loan.annualInterestRate}% · {yearsRemaining}yr (~{formatYen(Math.round(monthlyPayment))}/mo)
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => removeLoan(loan.id)}
-                            aria-label={`Remove ${loan.label}`}
+            <CollapsibleSection title="Loans & Mortgages (optional)" isOpen={showLoans} onToggle={() => setShowLoans(!showLoans)}>
+                {/* Existing loans */}
+                {loans.map((loan) => {
+                    const monthlyPayment = loan.remainingMonths > 0
+                        ? (loan.principal * ((loan.annualInterestRate / 100 / 12) * Math.pow(1 + loan.annualInterestRate / 100 / 12, loan.remainingMonths))) / (Math.pow(1 + loan.annualInterestRate / 100 / 12, loan.remainingMonths) - 1)
+                        : 0;
+                    const yearsRemaining = Math.ceil(loan.remainingMonths / 12);
+                    return (
+                        <div
+                            key={loan.id}
                             style={{
-                                background: "none",
-                                border: "none",
-                                padding: "2px",
-                                cursor: "pointer",
-                                color: "#CC0000",
                                 display: "flex",
                                 alignItems: "center",
-                                minWidth: 20,
-                                minHeight: 20,
+                                justifyContent: "space-between",
+                                background: "rgba(255,255,255,0.04)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                padding: "8px 10px",
+                                marginBottom: 8,
+                                gap: 8,
                             }}
                         >
-                            <XIcon size={12} strokeWidth={2} />
-                        </button>
-                    </div>
-                );
-            })}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div
+                                    style={{
+                                        fontFamily: "'JetBrains Mono', monospace",
+                                        fontSize: 11,
+                                        color: "#F9F9F7",
+                                        fontWeight: 500,
+                                        marginBottom: 2,
+                                    }}
+                                >
+                                    {loan.label}
+                                </div>
+                                <div
+                                    style={{
+                                        fontFamily: "'JetBrains Mono', monospace",
+                                        fontSize: 9,
+                                        color: "rgba(255,255,255,0.4)",
+                                    }}
+                                >
+                                    {formatYen(loan.principal)} · {loan.annualInterestRate}% · {yearsRemaining}yr (~{formatYen(Math.round(monthlyPayment))}/mo)
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => removeLoan(loan.id)}
+                                aria-label={`Remove ${loan.label}`}
+                                style={{
+                                    background: "none",
+                                    border: "none",
+                                    padding: "2px",
+                                    cursor: "pointer",
+                                    color: "#CC0000",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    minWidth: 20,
+                                    minHeight: 20,
+                                }}
+                            >
+                                <XIcon size={12} strokeWidth={2} />
+                            </button>
+                        </div>
+                    );
+                })}
 
-            {/* Add new loan form */}
-            <div
-                style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    padding: "10px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                    marginBottom: 24,
-                }}
-            >
-                <input
-                    type="text"
-                    placeholder="Label (e.g. Mortgage, Car Loan)"
-                    value={newLoan.label}
-                    onChange={(e) => setNewLoan((l) => ({ ...l, label: e.target.value }))}
+                {/* Add new loan form */}
+                <div
                     style={{
-                        background: "transparent",
-                        border: "none",
-                        borderBottom: "1px solid rgba(255,255,255,0.2)",
-                        color: "#F9F9F7",
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: 12,
-                        padding: "5px 4px",
-                        outline: "none",
-                        width: "100%",
-                    }}
-                />
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                    <div>
-                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Principal (¥)</label>
-                        <NumberInput
-                            value={newLoan.principal}
-                            onChange={(v) => setNewLoan((l) => ({ ...l, principal: v }))}
-                            min={0} step={1000000} prefix="¥"
-                        />
-                    </div>
-                    <div>
-                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Interest Rate (%)</label>
-                        <NumberInput
-                            value={newLoan.annualInterestRate}
-                            onChange={(v) => setNewLoan((l) => ({ ...l, annualInterestRate: v }))}
-                            min={0} max={20} step={0.1} suffix="%"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Term (years)</label>
-                    <NumberInput
-                        value={newLoan.remainingMonths / 12}
-                        onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: Math.round(v * 12) }))}
-                        min={1} max={50} step={1} suffix=" years"
-                    />
-                </div>
-                <button
-                    onClick={addLoan}
-                    style={{
-                        background: "#CC0000",
-                        border: "none",
-                        color: "#F9F9F7",
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontWeight: 700,
-                        fontSize: 10,
-                        letterSpacing: "0.14em",
-                        textTransform: "uppercase",
-                        padding: "8px",
-                        cursor: "pointer",
-                        transition: "background 0.15s",
+                        background: "rgba(255,255,255,0.03)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        padding: "10px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                        marginBottom: 24,
                     }}
                 >
-                    + Add Loan
-                </button>
-            </div>
+                    <input
+                        type="text"
+                        placeholder="Label (e.g. Mortgage, Car Loan)"
+                        value={newLoan.label}
+                        onChange={(e) => setNewLoan((l) => ({ ...l, label: e.target.value }))}
+                        style={{
+                            background: "transparent",
+                            border: "none",
+                            borderBottom: "1px solid rgba(255,255,255,0.2)",
+                            color: "#F9F9F7",
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontSize: 12,
+                            padding: "5px 4px",
+                            outline: "none",
+                            width: "100%",
+                        }}
+                    />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                        <div>
+                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Principal (¥)</label>
+                            <NumberInput
+                                value={newLoan.principal}
+                                onChange={(v) => setNewLoan((l) => ({ ...l, principal: v }))}
+                                min={0} step={1000000} prefix="¥"
+                            />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Interest Rate (%)</label>
+                            <NumberInput
+                                value={newLoan.annualInterestRate}
+                                onChange={(v) => setNewLoan((l) => ({ ...l, annualInterestRate: v }))}
+                                min={0} max={20} step={0.1} suffix="%"
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Term (years)</label>
+                        <NumberInput
+                            value={newLoan.remainingMonths / 12}
+                            onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: Math.round(v * 12) }))}
+                            min={1} max={50} step={1} suffix=" years"
+                        />
+                    </div>
+                    <button
+                        onClick={addLoan}
+                        style={{
+                            background: "#CC0000",
+                            border: "none",
+                            color: "#F9F9F7",
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontWeight: 700,
+                            fontSize: 10,
+                            letterSpacing: "0.14em",
+                            textTransform: "uppercase",
+                            padding: "8px",
+                            cursor: "pointer",
+                            transition: "background 0.15s",
+                        }}
+                    >
+                        + Add Loan
+                    </button>
+                </div>
+            </CollapsibleSection>
         </div>
     );
 }
