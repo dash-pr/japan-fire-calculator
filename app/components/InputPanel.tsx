@@ -230,15 +230,15 @@ function CollapsibleSection({
                 onClick={onToggle}
                 style={{
                     width: "100%",
-                    padding: "9px 0 8px",
+                    padding: "10px 0 9px",
                     background: "transparent",
                     border: "none",
                     borderBottom: "1px solid rgba(255,255,255,0.12)",
                     color: "rgba(255,255,255,0.4)",
                     fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: 700,
-                    letterSpacing: "0.22em",
+                    letterSpacing: "0.18em",
                     textTransform: "uppercase",
                     cursor: "pointer",
                     display: "flex",
@@ -446,12 +446,13 @@ export default function InputPanel({
 }: Props) {
     const [showFunds, setShowFunds] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
-    const [showProfile, setShowProfile] = useState(true);
-    const [showIncomeExpenses, setShowIncomeExpenses] = useState(true);
-    const [showInvestment, setShowInvestment] = useState(true);
-    const [showAccounts, setShowAccounts] = useState(true);
+    const [showProfile, setShowProfile] = useState(false);
+    const [showIncomeExpenses, setShowIncomeExpenses] = useState(false);
+    const [showInvestment, setShowInvestment] = useState(false);
+    const [showAccounts, setShowAccounts] = useState(false);
     const [showPortfolio, setShowPortfolio] = useState(false);
     const [showLoans, setShowLoans] = useState(false);
+    const [showInvestmentAllocation, setShowInvestmentAllocation] = useState(false);
     const [newLoan, setNewLoan] = useState({ label: "Mortgage", principal: 25_000_000, annualInterestRate: 2.5, remainingMonths: 360 });
 
     const addLoan = () => {

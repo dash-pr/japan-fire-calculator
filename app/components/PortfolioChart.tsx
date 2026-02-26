@@ -165,20 +165,31 @@ export default function PortfolioChart({ result }: Props) {
         if (!chartData || chartData.length === 0) return [0, "auto"];
 
         let maxValue = 0;
-        let minValue = 0;
 
         for (const item of chartData) {
-            if (visibility.total) maxValue = Math.max(maxValue, item.portfolio ?? 0);
-            if (visibility.ideco) maxValue = Math.max(maxValue, item.ideco ?? 0);
-            if (visibility.nisaTsumitate) maxValue = Math.max(maxValue, item.nisaTsumitate ?? 0);
-            if (visibility.nisaGrowth) maxValue = Math.max(maxValue, item.nisaGrowth ?? 0);
-            if (visibility.taxable) maxValue = Math.max(maxValue, item.taxable ?? 0);
+            // When showing stacked areas (individual accounts), use the sum of visible accounts
+            // Otherwise just use portfolio total or other visible lines
+            if (visibility.ideco || visibility.nisaTsumitate || visibility.nisaGrowth || visibility.taxable) {
+                // Stacked: find max of sum of visible accounts
+                let stackSum = 0;
+                if (visibility.ideco) stackSum += item.ideco ?? 0;
+                if (visibility.nisaTsumitate) stackSum += item.nisaTsumitate ?? 0;
+                if (visibility.nisaGrowth) stackSum += item.nisaGrowth ?? 0;
+                if (visibility.taxable) stackSum += item.taxable ?? 0;
+                maxValue = Math.max(maxValue, stackSum);
+            } else if (visibility.total) {
+                // Total portfolio line only
+                maxValue = Math.max(maxValue, item.portfolio ?? 0);
+            }
+
+            // Also check other non-stacked lines
             if (visibility.spending) maxValue = Math.max(maxValue, item.spending ?? 0);
             if (visibility.swp) maxValue = Math.max(maxValue, item.swp ?? 0);
             if (visibility.fireLines) maxValue = Math.max(maxValue, item.required ?? 0);
         }
 
-        // Add 10% padding to the top
+        // Add 10% padding to the top (or use 0 if nothing is visible)
+        if (maxValue === 0) return [0, "auto"];
         const paddedMax = maxValue * 1.1;
         return [0, Math.ceil(paddedMax)];
     }, [chartData, visibility]);
