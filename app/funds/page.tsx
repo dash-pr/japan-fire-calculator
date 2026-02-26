@@ -271,7 +271,7 @@ export default function FundsPage() {
       <div style={{ borderBottom: "4px solid var(--ink)", paddingBottom: 6, marginBottom: 20, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: 8 }}>
         <div>
           <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--n500)", marginBottom: 4 }}>NISA Fund Guide</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>Fund Encyclopedia & Basket Builder</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: "var(--ink)", lineHeight: 1 }}>Fund Encyclopedia & Basket Builder</div>
         </div>
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "var(--n500)", textAlign: "right", lineHeight: 1.6 }}>
           {filtered.length} funds · Returns in JPY · Annualised<br />

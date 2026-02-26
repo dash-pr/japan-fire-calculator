@@ -84,7 +84,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <div
       style={{
         fontFamily: "'Playfair Display', serif",
-        fontSize: 19,
+        fontSize: 24,
         fontWeight: 700,
         letterSpacing: "-0.01em",
         color: "var(--ink)",
@@ -263,7 +263,7 @@ export default function CashFlowPage() {
             <div
               style={{
                 fontFamily: "'Playfair Display', serif",
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: 700,
                 color,
               }}

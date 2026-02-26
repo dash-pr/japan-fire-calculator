@@ -363,7 +363,7 @@ export default function NenkinPage() {
                   </div>
                   <div style={{
                     fontFamily: "'Playfair Display', serif",
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: 700,
                     color: "#4ECDC4",
                   }}>
