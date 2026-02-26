@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
+import { FUND_RETURNS_FALLBACK } from "@/lib/fundReturnsFallback";
 
-const CACHE_FILE = "/tmp/fund-cache.json";
-const CACHE_TTL_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+export const revalidate = 86400; // Cache for 24 hours on Vercel Edge
 
 // Fund ticker → Yahoo Finance proxy
 const FUND_TO_YAHOO: Record<string, string> = {
@@ -33,11 +32,6 @@ const YAHOO_TICKERS = [
   "VYM", "FNGS", "USDJPY=X",
 ];
 
-interface CacheData {
-  fetchedAt: number;
-  returns: Record<string, { return1y: number; return3y: number; return5y: number; return10y: number }>;
-}
-
 async function fetchMonthlyPrices(ticker: string): Promise<number[]> {
   const now = Math.floor(Date.now() / 1000);
   const start = now - 11 * 365 * 24 * 3600; // 11 years history
@@ -60,58 +54,99 @@ function applyFX(usdReturn: number, fxReturn: number): number {
 }
 
 export async function GET() {
-  // --- Read cache ---
   try {
-    const cached: CacheData = JSON.parse(fs.readFileSync(CACHE_FILE, "utf-8"));
-    if (Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-      return NextResponse.json(cached.returns, {
-        headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=172800" },
-      });
-    }
-  } catch {}
+    // --- Fetch fresh ---
+    const priceMap: Record<string, number[]> = {};
+    await Promise.allSettled(
+      YAHOO_TICKERS.map(async (t) => {
+        try {
+          priceMap[t] = await fetchMonthlyPrices(t);
+        } catch {
+          priceMap[t] = [];
+        }
+      })
+    );
 
-  // --- Fetch fresh ---
-  const priceMap: Record<string, number[]> = {};
-  await Promise.allSettled(
-    YAHOO_TICKERS.map(async (t) => {
-      try {
-        priceMap[t] = await fetchMonthlyPrices(t);
-      } catch {
-        priceMap[t] = [];
-      }
-    })
-  );
-
-  const fx = priceMap["USDJPY=X"] ?? [];
-  const fxRet = {
-    r1: annualizedReturn(fx, 12),
-    r3: annualizedReturn(fx, 36),
-    r5: annualizedReturn(fx, 60),
-    r10: annualizedReturn(fx, 120),
-  };
-
-  const returns: Record<string, { return1y: number; return3y: number; return5y: number; return10y: number }> = {};
-
-  for (const [fund, yahoo] of Object.entries(FUND_TO_YAHOO)) {
-    const p = priceMap[yahoo] ?? [];
-    if (p.length < 13) continue;
-    const isUsd = USD_TICKERS.has(yahoo);
-    const adjust = (v: number, f: number) => (isUsd ? applyFX(v, f) : v);
-
-    returns[fund] = {
-      return1y: adjust(annualizedReturn(p, 12), fxRet.r1),
-      return3y: adjust(annualizedReturn(p, 36), fxRet.r3),
-      return5y: adjust(annualizedReturn(p, 60), fxRet.r5),
-      return10y: adjust(annualizedReturn(p, 120), fxRet.r10),
+    const fx = priceMap["USDJPY=X"] ?? [];
+    const fxRet = {
+      r1: annualizedReturn(fx, 12),
+      r3: annualizedReturn(fx, 36),
+      r5: annualizedReturn(fx, 60),
+      r10: annualizedReturn(fx, 120),
     };
+
+    const returns: Record<
+      string,
+      { return1y: number; return3y: number; return5y: number; return10y: number }
+    > = {};
+
+    for (const [fund, yahoo] of Object.entries(FUND_TO_YAHOO)) {
+      const p = priceMap[yahoo] ?? [];
+      if (p.length < 13) continue;
+      const isUsd = USD_TICKERS.has(yahoo);
+      const adjust = (v: number, f: number) => (isUsd ? applyFX(v, f) : v);
+
+      returns[fund] = {
+        return1y: adjust(annualizedReturn(p, 12), fxRet.r1),
+        return3y: adjust(annualizedReturn(p, 36), fxRet.r3),
+        return5y: adjust(annualizedReturn(p, 60), fxRet.r5),
+        return10y: adjust(annualizedReturn(p, 120), fxRet.r10),
+      };
+    }
+
+    // If we got decent data, return it as fresh
+    if (Object.keys(returns).length > 15) {
+      return NextResponse.json(
+        {
+          data: returns,
+          meta: {
+            fetchedAt: Date.now(),
+            isStale: false,
+            source: "yahoo-finance",
+          },
+        },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=172800",
+          },
+        }
+      );
+    }
+
+    // Fallback if fetch didn't return enough data
+    return NextResponse.json(
+      {
+        data: FUND_RETURNS_FALLBACK,
+        meta: {
+          fetchedAt: Date.now(),
+          isStale: true,
+          source: "fallback",
+        },
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Fund returns fetch error:", error);
+
+    // Return fallback data with stale flag
+    return NextResponse.json(
+      {
+        data: FUND_RETURNS_FALLBACK,
+        meta: {
+          fetchedAt: Date.now(),
+          isStale: true,
+          source: "fallback",
+        },
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      }
+    );
   }
-
-  // --- Write cache ---
-  try {
-    fs.writeFileSync(CACHE_FILE, JSON.stringify({ fetchedAt: Date.now(), returns }));
-  } catch {}
-
-  return NextResponse.json(returns, {
-    headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=172800" },
-  });
 }
