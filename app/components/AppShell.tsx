@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/chart",      label: "Portfolio Chart", short: "Chart"      },
   { href: "/breakdown",  label: "Data Table",      short: "Breakdown"  },
   { href: "/cashflow",   label: "Cash Flow",       short: "Cash Flow"  },
+  { href: "/nenkin",     label: "Nenkin Calc",     short: "Nenkin"     },
   { href: "/funds",      label: "Fund Guide",      short: "Funds"      },
   { href: "/docs",       label: "Documentation",   short: "Docs"       },
 ];
