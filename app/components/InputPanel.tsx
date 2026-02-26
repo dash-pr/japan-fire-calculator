@@ -146,9 +146,9 @@ function SliderField({
         <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <label style={{
-                    fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
                     letterSpacing: "0.1em", textTransform: "uppercase" as const,
-                    color: "rgba(255,255,255,0.4)", display: "flex", alignItems: "center",
+                    color: "rgba(255,255,255,0.75)", display: "flex", alignItems: "center",
                 }}>
                     {label}{info && <InfoTooltip text={info} />}
                 </label>
@@ -164,7 +164,7 @@ function SliderField({
                         placeholder="Enter value"
                         style={{
                             width: 64, padding: "1px 4px", background: "rgba(255,255,255,0.1)",
-                            border: "1px solid rgba(204,0,0,0.6)", color: "#CC0000",
+                            border: "1px solid rgba(204,0,0,0.6)", color: "#FF8C00",
                             fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
                             fontWeight: 700, outline: "none", textAlign: "right" as const,
                         }}
@@ -175,7 +175,7 @@ function SliderField({
                         onClick={() => { setDraft(String(value)); setEditing(true); }}
                         style={{
                             fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
-                            fontWeight: 700, color: "#CC0000", letterSpacing: "0.02em",
+                            fontWeight: 700, color: "#FF8C00", letterSpacing: "0.02em",
                             cursor: "text", borderBottom: "1px dashed rgba(204,0,0,0.35)", lineHeight: 1,
                             userSelect: "text",
                         }}
@@ -207,11 +207,11 @@ function SectionHeader({ title }: { title: string }) {
             <span
                 style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 9,
+                    fontSize: 13,
                     fontWeight: 700,
                     letterSpacing: "0.22em",
                     textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.4)",
+                    color: "rgba(255,255,255,0.75)",
                 }}
             >
                 {title}
@@ -242,9 +242,9 @@ function CollapsibleSection({
                     background: "transparent",
                     border: "none",
                     borderBottom: "1px solid rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.4)",
+                    color: "rgba(255,255,255,0.75)",
                     fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: 700,
                     letterSpacing: "0.18em",
                     textTransform: "uppercase",
@@ -273,11 +273,11 @@ function Field({ label, info, children }: { label: string; info?: string; childr
                     display: "flex",
                     alignItems: "center",
                     fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: 500,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.4)",
+                    color: "rgba(255,255,255,0.75)",
                     marginBottom: 5,
                 }}
             >
@@ -315,7 +315,7 @@ function NumberInput({
                         left: 4,
                         fontFamily: "'JetBrains Mono', monospace",
                         fontSize: 12,
-                        color: "rgba(255,255,255,0.35)",
+                        color: "rgba(255,255,255,0.7)",
                         pointerEvents: "none",
                     }}
                 >
@@ -341,8 +341,8 @@ function NumberInput({
                         position: "absolute",
                         right: 4,
                         fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: 11,
-                        color: "rgba(255,255,255,0.35)",
+                        fontSize: 13,
+                        color: "rgba(255,255,255,0.7)",
                         pointerEvents: "none",
                     }}
                 >
@@ -381,12 +381,12 @@ function Toggle({
                 type="checkbox"
                 checked={checked}
                 onChange={(e) => onChange(e.target.checked)}
-                style={{ accentColor: checked ? "#CC0000" : "#F9F9F7" }}
+                style={{ accentColor: checked ? "#FF8C00" : "#F9F9F7" }}
             />
             <span
                 style={{
                     fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 11,
+                    fontSize: 13,
                     color: checked ? "#F9F9F7" : "rgba(255,255,255,0.5)",
                     fontWeight: checked ? 600 : 400,
                     letterSpacing: "0.02em",
@@ -482,7 +482,7 @@ export default function InputPanel({
         onLoans(loans.filter((l) => l.id !== id));
 
     const fmtPct = (v: number) => `${v}%`;
-    const fmtAge = (v: number) => `age\u00a0${v}`;
+    const fmtAge = (v: number) => `${v}`;
 
     return (
         <div
@@ -560,7 +560,7 @@ export default function InputPanel({
                         border: "1px solid rgba(255,255,255,0.15)",
                         color: "rgba(255,255,255,0.55)",
                         fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: 600,
                         letterSpacing: "0.12em",
                         textTransform: "uppercase",
@@ -603,11 +603,11 @@ export default function InputPanel({
                                     style={{
                                         flex: 1,
                                         padding: "5px 6px",
-                                        background: active ? "rgba(204,0,0,0.18)" : "rgba(255,255,255,0.05)",
-                                        border: `1px solid ${active ? "#CC0000" : "rgba(255,255,255,0.12)"}`,
-                                        color: active ? "#CC0000" : "rgba(255,255,255,0.45)",
+                                        background: active ? "rgba(255,140,0,0.18)" : "rgba(255,255,255,0.05)",
+                                        border: `1px solid ${active ? "#FF8C00" : "rgba(255,255,255,0.12)"}`,
+                                        color: active ? "#FF8C00" : "rgba(255,255,255,0.45)",
                                         fontFamily: "'JetBrains Mono', monospace",
-                                        fontSize: 10,
+                                        fontSize: 12,
                                         fontWeight: active ? 700 : 400,
                                         letterSpacing: "0.08em",
                                         textTransform: "uppercase",
@@ -616,7 +616,7 @@ export default function InputPanel({
                                     }}
                                 >
                                     {type === "freelancer" ? "Freelancer" : "Employee"}<br />
-                                    <span style={{ fontSize: 9, opacity: 0.7 }}>{cap}/mo</span>
+                                    <span style={{ fontSize: 13, opacity: 0.7 }}>{cap}/mo</span>
                                 </button>
                             );
                         })}
@@ -646,9 +646,9 @@ export default function InputPanel({
                     width: "100%", padding: "9px 0 8px",
                     background: "transparent", border: "none",
                     borderTop: "1px solid rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.4)",
+                    color: "rgba(255,255,255,0.75)",
                     fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 9, fontWeight: 700, letterSpacing: "0.22em",
+                    fontSize: 13, fontWeight: 700, letterSpacing: "0.22em",
                     textTransform: "uppercase", cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     marginTop: 8, marginBottom: showAdvanced ? 12 : 8,
@@ -686,7 +686,7 @@ export default function InputPanel({
                             <label
                                 style={{
                                     fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: 10,
+                                    fontSize: 12,
                                     fontWeight: 600,
                                     letterSpacing: "0.08em",
                                     textTransform: "uppercase",
@@ -732,7 +732,7 @@ export default function InputPanel({
                                     <span
                                         style={{
                                             fontFamily: "'JetBrains Mono', monospace",
-                                            fontSize: 9,
+                                            fontSize: 13,
                                             color: "rgba(255,255,255,0.6)",
                                             letterSpacing: "0.06em",
                                         }}
@@ -746,11 +746,11 @@ export default function InputPanel({
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
                         <div>
-                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FIRE Side Income / mo</label>
+                            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FIRE Side Income / mo</label>
                             <NumberInput value={postFireMonthlyIncome} onChange={onPostFireMonthlyIncome} step={10000} prefix="¥" min={0} />
                         </div>
                         <div>
-                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Ends at Age</label>
+                            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Ends at Age</label>
                             <NumberInput value={postFireIncomeEndAge} onChange={onPostFireIncomeEndAge} step={1} min={0} max={90} />
                         </div>
                     </div>
@@ -766,11 +766,11 @@ export default function InputPanel({
                     />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
                         <div>
-                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FATFIRE Side Income / mo</label>
+                            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post-FATFIRE Side Income / mo</label>
                             <NumberInput value={postFatfireMonthlyIncome} onChange={onPostFatfireMonthlyIncome} step={10000} prefix="¥" min={0} />
                         </div>
                         <div>
-                            <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Ends at Age</label>
+                            <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Ends at Age</label>
                             <NumberInput value={postFatfireIncomeEndAge} onChange={onPostFatfireIncomeEndAge} step={1} min={0} max={120} />
                         </div>
                     </div>
@@ -788,7 +788,7 @@ export default function InputPanel({
                         <div
                             style={{
                                 fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontWeight: 600,
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
@@ -800,11 +800,11 @@ export default function InputPanel({
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                             <div>
-                                <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Save per month</label>
+                                <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Save per month</label>
                                 <NumberInput value={monthlyEmerigencySavings} onChange={onMonthlyEmerigencySavings} step={10000} prefix="¥" min={0} />
                             </div>
                             <div>
-                                <label style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Target amount</label>
+                                <label style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", display: "block", marginBottom: 5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>Target amount</label>
                                 <NumberInput value={emergencyFundTarget} onChange={onEmergencyFundTarget} step={100000} prefix="¥" min={0} />
                             </div>
                         </div>
@@ -823,7 +823,7 @@ export default function InputPanel({
                         <div
                             style={{
                                 fontFamily: "'JetBrains Mono', monospace",
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontWeight: 600,
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
@@ -840,9 +840,9 @@ export default function InputPanel({
                                     name="allocation"
                                     checked={allocationStrategy === "optimal"}
                                     onChange={() => onAllocationStrategy("optimal")}
-                                    style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                    style={{ accentColor: "#FF8C00", cursor: "pointer" }}
                                 />
-                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Optimal — Maximize tax efficiency</span>
+                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Optimal — Maximize tax efficiency</span>
                             </label>
                             {(accounts.idecoEnabled || accounts.nisaTsumitateEnabled || accounts.nisaGrowthEnabled) && (
                                 <>
@@ -852,9 +852,9 @@ export default function InputPanel({
                                             name="allocation"
                                             checked={allocationStrategy === "prioritizeNisa"}
                                             onChange={() => onAllocationStrategy("prioritizeNisa")}
-                                            style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                            style={{ accentColor: "#FF8C00", cursor: "pointer" }}
                                         />
-                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Prioritize NISA — Fill NISA first</span>
+                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Prioritize NISA — Fill NISA first</span>
                                     </label>
                                     <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                                         <input
@@ -862,9 +862,9 @@ export default function InputPanel({
                                             name="allocation"
                                             checked={allocationStrategy === "prioritizeIdeco"}
                                             onChange={() => onAllocationStrategy("prioritizeIdeco")}
-                                            style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                            style={{ accentColor: "#FF8C00", cursor: "pointer" }}
                                         />
-                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Prioritize iDeCo — Fill iDeCo first</span>
+                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Prioritize iDeCo — Fill iDeCo first</span>
                                     </label>
                                     <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
                                         <input
@@ -872,9 +872,9 @@ export default function InputPanel({
                                             name="allocation"
                                             checked={allocationStrategy === "equalSplit"}
                                             onChange={() => onAllocationStrategy("equalSplit")}
-                                            style={{ accentColor: "#CC0000", cursor: "pointer" }}
+                                            style={{ accentColor: "#FF8C00", cursor: "pointer" }}
                                         />
-                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.7)" }}>Equal Split — Divide equally</span>
+                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Equal Split — Divide equally</span>
                                     </label>
                                 </>
                             )}
@@ -937,7 +937,7 @@ export default function InputPanel({
                                 <div
                                     style={{
                                         fontFamily: "'JetBrains Mono', monospace",
-                                        fontSize: 11,
+                                        fontSize: 13,
                                         color: "#F9F9F7",
                                         fontWeight: 500,
                                         marginBottom: 2,
@@ -948,8 +948,8 @@ export default function InputPanel({
                                 <div
                                     style={{
                                         fontFamily: "'JetBrains Mono', monospace",
-                                        fontSize: 9,
-                                        color: "rgba(255,255,255,0.4)",
+                                        fontSize: 13,
+                                        color: "rgba(255,255,255,0.75)",
                                     }}
                                 >
                                     {formatYen(loan.principal)} · {loan.annualInterestRate}% · {yearsRemaining}yr (~{formatYen(Math.round(monthlyPayment))}/mo)
@@ -963,7 +963,7 @@ export default function InputPanel({
                                     border: "none",
                                     padding: "2px",
                                     cursor: "pointer",
-                                    color: "#CC0000",
+                                    color: "#FF8C00",
                                     display: "flex",
                                     alignItems: "center",
                                     minWidth: 20,
@@ -1007,7 +1007,7 @@ export default function InputPanel({
                     />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                         <div>
-                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Principal (¥)</label>
+                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.8)", display: "block", marginBottom: 3 }}>Principal (¥)</label>
                             <NumberInput
                                 value={newLoan.principal}
                                 onChange={(v) => setNewLoan((l) => ({ ...l, principal: v }))}
@@ -1015,7 +1015,7 @@ export default function InputPanel({
                             />
                         </div>
                         <div>
-                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Interest Rate (%)</label>
+                            <label style={{ fontSize: 8, color: "rgba(255,255,255,0.8)", display: "block", marginBottom: 3 }}>Interest Rate (%)</label>
                             <NumberInput
                                 value={newLoan.annualInterestRate}
                                 onChange={(v) => setNewLoan((l) => ({ ...l, annualInterestRate: v }))}
@@ -1024,7 +1024,7 @@ export default function InputPanel({
                         </div>
                     </div>
                     <div>
-                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.5)", display: "block", marginBottom: 3 }}>Term (years)</label>
+                        <label style={{ fontSize: 8, color: "rgba(255,255,255,0.8)", display: "block", marginBottom: 3 }}>Term (years)</label>
                         <NumberInput
                             value={newLoan.remainingMonths / 12}
                             onChange={(v) => setNewLoan((l) => ({ ...l, remainingMonths: Math.round(v * 12) }))}
@@ -1039,7 +1039,7 @@ export default function InputPanel({
                             color: "#F9F9F7",
                             fontFamily: "'JetBrains Mono', monospace",
                             fontWeight: 700,
-                            fontSize: 10,
+                            fontSize: 12,
                             letterSpacing: "0.14em",
                             textTransform: "uppercase",
                             padding: "8px",
@@ -1066,8 +1066,8 @@ function FundPicker({ onSelect, current }: { onSelect: (r: number) => void; curr
                         key={fund.ticker}
                         onClick={() => onSelect(fund.expectedReturn)}
                         style={{
-                            background: active ? "rgba(204,0,0,0.15)" : "rgba(255,255,255,0.04)",
-                            border: `1px solid ${active ? "#CC0000" : "rgba(255,255,255,0.1)"}`,
+                            background: active ? "rgba(255,140,0,0.15)" : "rgba(255,255,255,0.04)",
+                            border: `1px solid ${active ? "#FF8C00" : "rgba(255,255,255,0.1)"}`,
                             padding: "9px 11px",
                             textAlign: "left",
                             cursor: "pointer",
@@ -1078,9 +1078,9 @@ function FundPicker({ onSelect, current }: { onSelect: (r: number) => void; curr
                             <span
                                 style={{
                                     fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: 11,
+                                    fontSize: 13,
                                     fontWeight: 600,
-                                    color: active ? "#CC0000" : "#F9F9F7",
+                                    color: active ? "#FF8C00" : "#F9F9F7",
                                     flex: 1,
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
@@ -1093,8 +1093,8 @@ function FundPicker({ onSelect, current }: { onSelect: (r: number) => void; curr
                             <span
                                 style={{
                                     fontFamily: "'JetBrains Mono', monospace",
-                                    fontSize: 11,
-                                    color: "#CC0000",
+                                    fontSize: 13,
+                                    color: "#FF8C00",
                                     fontWeight: 700,
                                     whiteSpace: "nowrap",
                                 }}
@@ -1109,11 +1109,11 @@ function FundPicker({ onSelect, current }: { onSelect: (r: number) => void; curr
                                 fontFamily: "'JetBrains Mono', monospace",
                             }}
                         >
-                            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
                                 {fund.category} · Fee: {fund.expenseRatio}%
                             </span>
-                            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>
-                                5y avg: <span style={{ color: active ? "#CC0000" : "rgba(255,255,255,0.7)", fontWeight: 600 }}>{fund.return5y}%</span>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>
+                                5y avg: <span style={{ color: active ? "#FF8C00" : "rgba(255,255,255,0.7)", fontWeight: 600 }}>{fund.return5y}%</span>
                             </span>
                         </div>
                     </button>
