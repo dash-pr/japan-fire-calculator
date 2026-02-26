@@ -639,8 +639,13 @@ export function formatYen(amount: number): string {
   if (Math.abs(amount) >= 1_0000_0000) { // 100M+
     return `¥${(amount / 1_0000_0000).toFixed(1)}億`;
   }
-  if (Math.abs(amount) >= 1_0000) { // 10k+
+  if (Math.abs(amount) >= 100_0000) { // 1M+ → show whole 万
     return `¥${(amount / 1_0000).toFixed(0)}万`;
+  }
+  if (Math.abs(amount) >= 1_0000) { // 10k+ → show 1 decimal 万 for precision
+    const man = amount / 1_0000;
+    // Use whole number if it's exact (e.g. ¥10万), otherwise 1 decimal (e.g. ¥6.8万)
+    return man % 1 === 0 ? `¥${man}万` : `¥${man.toFixed(1)}万`;
   }
   return `¥${amount.toLocaleString()}`;
 }
